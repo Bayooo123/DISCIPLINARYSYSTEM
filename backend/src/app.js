@@ -55,9 +55,12 @@ app.use((err, req, res, next) => {
   });
 });
 
-const PORT = process.env.PORT || 4000;
-app.listen(PORT, () => {
-  console.log(`TIDDS API running on port ${PORT} [${process.env.NODE_ENV || 'development'}]`);
-});
+// Only bind a port when running locally — Vercel handles this in serverless mode
+if (process.env.NODE_ENV !== 'production') {
+  const PORT = process.env.PORT || 4000;
+  app.listen(PORT, () => {
+    console.log(`TIDDS API running on port ${PORT} [development]`);
+  });
+}
 
 module.exports = app;
