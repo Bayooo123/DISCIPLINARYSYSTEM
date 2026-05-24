@@ -1,0 +1,27 @@
+# Dependencies
+node_modules/
+*/node_modules/
+
+# Environment files — never commit real secrets
+.env
+backend/.env
+frontend/.env
+
+# Build output
+dist/
+build/
+
+# Uploads (evidence files stored locally in dev)
+backend/uploads/
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/settings.json
+.idea/
