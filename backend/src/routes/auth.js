@@ -69,32 +69,18 @@ router.post('/login', async (req, res) => {
 
 // ── POST /auth/signup ────────────────────────────────────────────────────────
 
+const VALID_ROLES = ['student', 'complaints_officer', 'committee_member', 'panel_member', 'platform_admin'];
+
 router.post('/signup', async (req, res) => {
-  const { email, fullName, password } = req.body;
-  if (!email || !fullName || !password) {
-    return res.status(400).json({ error: 'Email, full name, and password are required.' });
+  const { email, fullName, password, role } = req.body;
+  if (!email || !fullName || !password || !role) {
+    return res.status(400).json({ error: 'Email, full name, password, and role are required.' });
   }
   if (password.length < 8) {
     return res.status(400).json({ error: 'Password must be at least 8 characters.' });
   }
-
-  // Check against the email whitelist (set ALLOWED_EMAILS as a JSON env var)
-  let whitelist = [];
-  try { whitelist = JSON.parse(process.env.ALLOWED_EMAILS || '[]'); } catch {}
-  const entry = whitelist.find(e => e.email.toLowerCase() === email.toLowerCase());
-  if (!entry) {
-    return res.status(403).json({ error: 'Your email is not authorised to register on this platform. Contact your administrator.' });
-  }
-
-  // Derive institution from email domain
-  const domain = email.split('@')[1];
-  const { rows: instRows } = await query(
-    'SELECT id, name FROM institutions WHERE domain = $1 AND is_active = true',
-    [domain]
-  );
-  const institution = instRows[0];
-  if (!institution && entry.role !== 'platform_admin') {
-    return res.status(400).json({ error: 'No active institution found for your email domain.' });
+  if (!VALID_ROLES.includes(role)) {
+    return res.status(400).json({ error: 'Invalid role selected.' });
   }
 
   // Reject if already registered
@@ -106,12 +92,20 @@ router.post('/signup', async (req, res) => {
     return res.status(409).json({ error: 'An account with this email already exists. Please sign in instead.' });
   }
 
+  // Try to match institution from email domain; null is fine if no match
+  const domain = email.split('@')[1];
+  const { rows: instRows } = await query(
+    'SELECT id, name FROM institutions WHERE domain = $1 AND is_active = true',
+    [domain]
+  );
+  const institution = instRows[0] || null;
+
   const passwordHash = await bcrypt.hash(password, 12);
   const { rows } = await query(
     `INSERT INTO users (institution_id, email, password_hash, full_name, role, is_active)
      VALUES ($1, $2, $3, $4, $5, true)
      RETURNING id, institution_id, email, full_name, role`,
-    [institution?.id || null, email, passwordHash, fullName, entry.role]
+    [institution?.id || null, email, passwordHash, fullName, role]
   );
 
   const user = rows[0];

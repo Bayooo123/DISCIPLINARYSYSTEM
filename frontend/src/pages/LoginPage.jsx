@@ -19,6 +19,7 @@ export default function LoginPage() {
   const [fullName, setFullName] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [role, setRole] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -27,6 +28,7 @@ export default function LoginPage() {
     setError('');
     setPassword('');
     setConfirmPassword('');
+    setRole('');
   }
 
   async function handleSubmit(e) {
@@ -41,7 +43,7 @@ export default function LoginPage() {
     setLoading(true);
     try {
       const user = mode === 'signup'
-        ? await signup(email, fullName, password)
+        ? await signup(email, fullName, password, role)
         : await login(email, password);
       navigate(ROLE_DESTINATIONS[user.role] || '/');
     } catch (err) {
@@ -103,19 +105,39 @@ export default function LoginPage() {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           {mode === 'signup' && (
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Full name
-              </label>
-              <input
-                type="text"
-                required
-                value={fullName}
-                onChange={e => setFullName(e.target.value)}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent"
-                placeholder="e.g. Adebayo Okafor"
-              />
-            </div>
+            <>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Full name
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={fullName}
+                  onChange={e => setFullName(e.target.value)}
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent"
+                  placeholder="e.g. Adebayo Okafor"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  I am joining as
+                </label>
+                <select
+                  required
+                  value={role}
+                  onChange={e => setRole(e.target.value)}
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent bg-white"
+                >
+                  <option value="">Select your role…</option>
+                  <option value="student">Student</option>
+                  <option value="complaints_officer">Complaints Officer</option>
+                  <option value="committee_member">Committee Member</option>
+                  <option value="panel_member">Panel Member</option>
+                  <option value="platform_admin">Platform Administrator</option>
+                </select>
+              </div>
+            </>
           )}
 
           <div>
@@ -173,13 +195,7 @@ export default function LoginPage() {
           </button>
         </form>
 
-        {mode === 'signup' && (
-          <p className="text-center text-xs text-gray-400 mt-5">
-            Only pre-approved university email addresses can register.
-          </p>
-        )}
-
-        <p className="text-center text-xs text-gray-400 mt-2">
+        <p className="text-center text-xs text-gray-400 mt-5">
           This is an official university system. Unauthorised access is a disciplinary offence.
         </p>
       </div>

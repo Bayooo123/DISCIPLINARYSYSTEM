@@ -24,8 +24,8 @@ export function AuthProvider({ children }) {
     return data.user;
   }
 
-  async function signup(email, fullName, password) {
-    const data = await api.post('/auth/signup', { email, fullName, password });
+  async function signup(email, fullName, password, role) {
+    const data = await api.post('/auth/signup', { email, fullName, password, role });
     localStorage.setItem('tidds_token', data.token);
     setUser(data.user);
     return data.user;
