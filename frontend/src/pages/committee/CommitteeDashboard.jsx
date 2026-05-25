@@ -23,16 +23,14 @@ export default function CommitteeDashboard() {
 
   useEffect(() => {
     const url = stage ? `/cases?stage=${stage}` : '/cases';
-    Promise.all([
+    setLoading(true);
+    Promise.allSettled([
       api.get(url),
       api.get('/admin/analytics'),
-    ])
-      .then(([casesData, analyticsData]) => {
-        setCases(casesData);
-        setAnalytics(analyticsData);
-      })
-      .catch(console.error)
-      .finally(() => setLoading(false));
+    ]).then(([casesResult, analyticsResult]) => {
+      if (casesResult.status === 'fulfilled') setCases(casesResult.value);
+      if (analyticsResult.status === 'fulfilled') setAnalytics(analyticsResult.value);
+    }).finally(() => setLoading(false));
   }, [stage]);
 
   return (

@@ -195,7 +195,7 @@ router.post(
 router.get(
   '/analytics',
   authenticate,
-  authorize(ROLES.COMMITTEE_MEMBER, ROLES.PLATFORM_ADMIN),
+  authorize(ROLES.COMMITTEE_MEMBER, ROLES.PANEL_MEMBER, ROLES.PLATFORM_ADMIN),
   scopeToInstitution,
   async (req, res) => {
     const iid = req.institutionId;
