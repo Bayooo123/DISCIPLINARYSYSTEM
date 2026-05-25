@@ -5,7 +5,6 @@
 
 const express = require('express');
 const multer = require('multer');
-const path = require('path');
 const { v4: uuidv4 } = require('uuid');
 const { query } = require('../config/db');
 const { authenticate, authorize, scopeToInstitution, ROLES } = require('../middleware/auth');
@@ -14,10 +13,11 @@ const workflow = require('../services/workflow');
 
 const router = express.Router();
 
-// File uploads stored locally for dev; swap storage engine for S3 in production
+// Memory storage — no disk writes, works in serverless (Vercel filesystem is read-only).
+// Files arrive as req.files[n].buffer; wire up S3 here when ready.
 const upload = multer({
-  dest: path.join(__dirname, '../../uploads/evidence'),
-  limits: { fileSize: 50 * 1024 * 1024 }, // 50 MB per file
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 50 * 1024 * 1024 },
   fileFilter: (req, file, cb) => {
     const allowed = ['image/jpeg', 'image/png', 'application/pdf',
       'video/mp4', 'application/msword',
