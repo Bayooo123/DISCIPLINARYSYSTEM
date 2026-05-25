@@ -24,13 +24,20 @@ export function AuthProvider({ children }) {
     return data.user;
   }
 
+  async function signup(email, fullName, password) {
+    const data = await api.post('/auth/signup', { email, fullName, password });
+    localStorage.setItem('tidds_token', data.token);
+    setUser(data.user);
+    return data.user;
+  }
+
   function logout() {
     localStorage.removeItem('tidds_token');
     setUser(null);
   }
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout }}>
+    <AuthContext.Provider value={{ user, loading, login, signup, logout }}>
       {children}
     </AuthContext.Provider>
   );
