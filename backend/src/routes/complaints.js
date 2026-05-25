@@ -166,7 +166,7 @@ router.post(
             file.originalname,
             file.size,
             file.mimetype,
-            file.filename, // local filename; replace with S3 key in production
+            file.originalname,
           ]
         );
 

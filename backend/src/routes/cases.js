@@ -5,7 +5,6 @@
 
 const express = require('express');
 const multer = require('multer');
-const path = require('path');
 const { query } = require('../config/db');
 const { authenticate, authorize, scopeToInstitution, ROLES } = require('../middleware/auth');
 const { writeAuditLog, fromRequest } = require('../middleware/audit');
@@ -14,7 +13,7 @@ const workflow = require('../services/workflow');
 const router = express.Router();
 
 const upload = multer({
-  dest: path.join(__dirname, '../../uploads/evidence'),
+  storage: multer.memoryStorage(),
   limits: { fileSize: 50 * 1024 * 1024 },
 });
 
@@ -192,7 +191,7 @@ router.post(
           `INSERT INTO evidence_files
              (case_id, uploaded_by, file_name, file_size, mime_type, storage_key)
            VALUES ($1,$2,$3,$4,$5,$6)`,
-          [id, req.user.id, file.originalname, file.size, file.mimetype, file.filename]
+          [id, req.user.id, file.originalname, file.size, file.mimetype, file.originalname]
         );
 
         await writeAuditLog({
