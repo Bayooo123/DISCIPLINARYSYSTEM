@@ -2,6 +2,6 @@
   "name": "tidds",
   "version": "1.0.0",
   "scripts": {
-    "build": "npm install --prefix frontend && npm --prefix frontend run build"
+    "build": "npm install --prefix frontend --include=dev && npm --prefix frontend run build"
   }
 }
