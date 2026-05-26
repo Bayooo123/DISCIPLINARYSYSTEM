@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { api } from '../../lib/api';
-import CommitteeCommitteeLayout from '../../components/CommitteeCommitteeLayout';
+import CommitteeLayout from '../../components/CommitteeLayout';
 
 export default function ConstitutePanelPage() {
   const { id } = useParams();
