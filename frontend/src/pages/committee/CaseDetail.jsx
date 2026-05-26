@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { api } from '../../lib/api';
-import Layout from '../../components/Layout';
+import CommitteeCommitteeLayout from '../../components/CommitteeCommitteeLayout';
 import StageBadge from '../../components/StageBadge';
 import { useAuth } from '../../context/AuthContext';
 
@@ -90,8 +90,8 @@ export default function CaseDetail() {
     }
   }
 
-  if (loading) return <Layout><p className="text-sm text-gray-400">Loading…</p></Layout>;
-  if (!caseData) return <Layout><p className="text-red-600">Case not found.</p></Layout>;
+  if (loading) return <CommitteeLayout><p className="text-sm text-gray-400">Loading…</p></CommitteeLayout>;
+  if (!caseData) return <CommitteeLayout><p className="text-red-600">Case not found.</p></CommitteeLayout>;
 
   const canConstitute = ['response_received', 'response_overdue'].includes(caseData.current_stage)
     && !caseData.panel
@@ -102,7 +102,7 @@ export default function CaseDetail() {
   const canVerdict = caseData.current_stage === 'hearing_completed' && !caseData.verdict;
 
   return (
-    <Layout>
+    <CommitteeLayout>
       <div className="max-w-4xl mx-auto">
         <div className="flex items-center justify-between mb-6">
           <Link to="/committee" className="text-sm text-brand hover:underline">← Dashboard</Link>
@@ -463,7 +463,7 @@ export default function CaseDetail() {
           </div>
         )}
       </div>
-    </Layout>
+    </CommitteeLayout>
   );
 }
 

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { api } from '../../lib/api';
-import Layout from '../../components/Layout';
+import CommitteeCommitteeLayout from '../../components/CommitteeCommitteeLayout';
 
 export default function ConstitutePanelPage() {
   const { id } = useParams();
@@ -64,7 +64,7 @@ export default function ConstitutePanelPage() {
   }
 
   return (
-    <Layout title="Constitute Panel">
+    <CommitteeLayout title="Constitute Panel">
       <div className="max-w-2xl mx-auto">
         <Link to={`/committee/cases/${id}`} className="text-sm text-brand hover:underline mb-6 inline-block">
           ← Back to case
@@ -139,6 +139,6 @@ export default function ConstitutePanelPage() {
           )}
         </div>
       </div>
-    </Layout>
+    </CommitteeLayout>
   );
 }

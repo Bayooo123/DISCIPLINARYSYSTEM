@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { api } from '../../lib/api';
-import Layout from '../../components/Layout';
+import CommitteeLayout from '../../components/CommitteeLayout';
 import StageBadge from '../../components/StageBadge';
 
 const STAGE_FILTERS = [
@@ -34,7 +34,7 @@ export default function CommitteeDashboard() {
   }, [stage]);
 
   return (
-    <Layout title="Disciplinary Committee Dashboard">
+    <CommitteeLayout title="Disciplinary Committee Dashboard">
       {/* Analytics strip */}
       {analytics && (
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
@@ -116,7 +116,7 @@ export default function CommitteeDashboard() {
           </table>
         </div>
       )}
-    </Layout>
+    </CommitteeLayout>
   );
 }
 
