@@ -15,6 +15,8 @@ import CommitteeDashboard from './pages/committee/CommitteeDashboard';
 import CaseDetail from './pages/committee/CaseDetail';
 import ConstitutePanelPage from './pages/committee/ConstitutePanelPage';
 
+import PanelDashboard from './pages/panel/PanelDashboard';
+
 function RequireAuth({ children, roles }) {
   const { user, loading } = useAuth();
   if (loading) {
@@ -36,7 +38,7 @@ function RoleRouter() {
     student: '/portal',
     complaints_officer: '/officer',
     committee_member: '/committee',
-    panel_member: '/committee',
+    panel_member: '/panel',
     platform_admin: '/committee',
   };
   return <Navigate to={destinations[user.role] || '/login'} replace />;
@@ -74,20 +76,27 @@ export default function App() {
           </RequireAuth>
         } />
 
-        {/* ── Committee / Panel ──────────────────────── */}
+        {/* ── Committee ─────────────────────────────── */}
         <Route path="/committee" element={
-          <RequireAuth roles={['committee_member', 'panel_member', 'platform_admin']}>
+          <RequireAuth roles={['committee_member', 'platform_admin']}>
             <CommitteeDashboard />
           </RequireAuth>
         } />
         <Route path="/committee/cases/:id" element={
-          <RequireAuth roles={['committee_member', 'panel_member', 'platform_admin']}>
+          <RequireAuth roles={['committee_member', 'platform_admin']}>
             <CaseDetail />
           </RequireAuth>
         } />
         <Route path="/committee/cases/:id/panel" element={
           <RequireAuth roles={['committee_member', 'platform_admin']}>
             <ConstitutePanelPage />
+          </RequireAuth>
+        } />
+
+        {/* ── Panel Member ───────────────────────────── */}
+        <Route path="/panel" element={
+          <RequireAuth roles={['panel_member']}>
+            <PanelDashboard />
           </RequireAuth>
         } />
 
