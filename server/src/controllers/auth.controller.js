@@ -1,4 +1,5 @@
-import { PrismaClient } from '@prisma/client';
+import pkg from '@prisma/client';
+const { PrismaClient } = pkg;
 import { comparePassword, hashPassword, generateInviteToken } from '../utils/crypto.utils.js';
 import { signToken } from '../utils/jwt.utils.js';
 

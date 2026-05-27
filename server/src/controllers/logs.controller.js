@@ -1,4 +1,5 @@
-import { PrismaClient } from '@prisma/client';
+import pkg from '@prisma/client';
+const { PrismaClient } = pkg;
 import { sendEmail } from '../services/email.service.js';
 import { sendSMS } from '../services/sms.service.js';
 import { writeLog } from '../services/log.service.js';

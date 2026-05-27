@@ -10,18 +10,18 @@ datasource db {
 // ─── INSTITUTION ──────────────────────────────────────────
 
 model Institution {
-  id              String    @id @default(uuid())
+  id              String        @id @default(uuid())
   name            String
-  slug            String    @unique
+  slug            String        @unique
   shortName       String?
   logoUrl         String?
-  primaryColor    String    @default("#7B1C1C")
-  secondaryColor  String    @default("#C9930A")
+  primaryColor    String        @default("#7B1C1C")
+  secondaryColor  String        @default("#C9930A")
   address         String?
   website         String?
   contactEmail    String?
   contactPhone    String?
-  country         String    @default("Nigeria")
+  country         String        @default("Nigeria")
   state           String?
   smtpHost        String?
   smtpPort        Int?
@@ -29,7 +29,7 @@ model Institution {
   smtpPass        String?
   emailFromName   String?
   emailFromAddr   String?
-  smsEnabled      Boolean   @default(false)
+  smsEnabled      Boolean       @default(false)
   smsSenderId     String?
   sisApiUrl       String?
   sisApiKey       String?
@@ -37,10 +37,10 @@ model Institution {
   licenceStart    DateTime?
   licenceEnd      DateTime?
   contractRef     String?
-  notes           String?   @db.Text
-  isActive        Boolean   @default(true)
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
+  notes           String?       @db.Text
+  isActive        Boolean       @default(true)
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
   users           User[]
   cases           Case[]
   panels          Panel[]
@@ -58,10 +58,10 @@ enum LicenceStatus {
 // ─── USER ─────────────────────────────────────────────────
 
 model User {
-  id               String    @id @default(uuid())
+  id               String       @id @default(uuid())
   institutionId    String?
   institution      Institution? @relation(fields: [institutionId], references: [id])
-  email            String    @unique
+  email            String       @unique
   passwordHash     String
   firstName        String
   lastName         String
@@ -70,14 +70,14 @@ model User {
   department       String?
   jobTitle         String?
   avatarUrl        String?
-  isActive         Boolean   @default(true)
+  isActive         Boolean      @default(true)
   lastLoginAt      DateTime?
   inviteToken      String?
   inviteExpiry     DateTime?
-  inviteAccepted   Boolean   @default(false)
-  createdAt        DateTime  @default(now())
-  updatedAt        DateTime  @updatedAt
-  casesAsFiler     Case[]    @relation("FiledBy")
+  inviteAccepted   Boolean      @default(false)
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+  casesAsFiler     Case[]       @relation("FiledBy")
   panelMemberships PanelMember[]
   auditLogs        AuditLog[]
 }
@@ -114,56 +114,111 @@ model Student {
 // ─── OFFENCE TYPE ─────────────────────────────────────────
 
 model OffenceType {
+  id             String          @id @default(uuid())
+  institutionId  String
+  institution    Institution     @relation(fields: [institutionId], references: [id])
+  name           String
+  category       OffenceCategory
+  description    String?
+  defaultPenalty String?
+  penaltyTier    PenaltyTier
+  isActive       Boolean         @default(true)
+  createdAt      DateTime        @default(now())
+  cases          CaseOffence[]
+}
+
+enum OffenceCategory {
+  EXAMINATION
+  DRUG_RELATED
+  SOCIAL_CONDUCT
+  HOSTEL
+  GENERAL
+}
+
+enum PenaltyTier {
+  EXPULSION
+  RUSTICATION_4
+  RUSTICATION_2
+  RUSTICATION_1
+  WARNING
+  PANEL_DECISION
+}
+
+// ─── CASE OFFENCE (join table) ────────────────────────────
+
+model CaseOffence {
   id            String      @id @default(uuid())
-  institutionId String
-  institution   Institution @relation(fields: [institutionId], references: [id])
-  name          String
-  category      String
-  description   String?
-  isActive      Boolean     @default(true)
-  createdAt     DateTime    @default(now())
-  cases         Case[]
+  caseId        String
+  case          Case        @relation(fields: [caseId], references: [id])
+  offenceTypeId String
+  offenceType   OffenceType @relation(fields: [offenceTypeId], references: [id])
+  addedAt       DateTime    @default(now())
 }
 
 // ─── CASE ─────────────────────────────────────────────────
 
 model Case {
-  id                String      @id @default(uuid())
-  referenceNumber   String      @unique
-  institutionId     String
-  institution       Institution @relation(fields: [institutionId], references: [id])
-  studentId         String
-  student           Student     @relation(fields: [studentId], references: [id])
-  filedById         String
-  filedBy           User        @relation("FiledBy", fields: [filedById], references: [id])
-  offenceTypeId     String
-  offenceType       OffenceType @relation(fields: [offenceTypeId], references: [id])
-  originType        OriginType
-  description       String      @db.Text
-  incidentDate      DateTime
-  incidentLocation  String?
-  filedAt           DateTime    @default(now())
-  status            CaseStatus  @default(COMPLAINT_FILED)
-  responseDeadline  DateTime
-  studentResponse   String?     @db.Text
-  studentResponseAt DateTime?
-  plea              Plea?
-  panelId           String?
-  panel             Panel?      @relation(fields: [panelId], references: [id])
-  hearingDate       DateTime?
-  hearingVenue      String?
-  verdict           String?     @db.Text
-  penalty           String?
-  verdictAt         DateTime?
-  closedAt          DateTime?
-  evidence          Evidence[]
-  notifications     Notification[]
-  auditLogs         AuditLog[]
+  id                          String       @id @default(uuid())
+  referenceNumber             String       @unique
+  institutionId               String
+  institution                 Institution  @relation(fields: [institutionId], references: [id])
+  studentId                   String
+  student                     Student      @relation(fields: [studentId], references: [id])
+  filedById                   String
+  filedBy                     User         @relation("FiledBy", fields: [filedById], references: [id])
+  originType                  OriginType
+  description                 String       @db.Text
+  incidentDate                DateTime
+  incidentLocation            String?
+  witnessName                 String?
+  courseCode                  String?
+  courseTitle                 String?
+  filedAt                     DateTime     @default(now())
+  status                      CaseStatus   @default(COMPLAINT_FILED)
+  responseDeadline            DateTime
+  studentResponse             String?      @db.Text
+  studentResponseAt           DateTime?
+  plea                        Plea?
+  panelId                     String?
+  panel                       Panel?       @relation(fields: [panelId], references: [id])
+  hearingDate                 DateTime?
+  hearingVenue                String?
+  verdict                     String?      @db.Text
+  penalty                     String?
+  verdictAt                   DateTime?
+  closedAt                    DateTime?
+  officerNotifiedOnResponse   Boolean      @default(false)
+  officerNotifiedOnVerdict    Boolean      @default(false)
+  offences                    CaseOffence[]
+  evidence                    Evidence[]
+  notifications               Notification[]
+  auditLogs                   AuditLog[]
 }
 
-enum OriginType  { FACULTY HOSTEL GENERAL }
-enum CaseStatus  { COMPLAINT_FILED STUDENT_NOTIFIED AWAITING_RESPONSE RESPONSE_RECEIVED RESPONSE_OVERDUE PANEL_CONSTITUTED HEARING_SCHEDULED HEARING_COMPLETE VERDICT_DELIVERED CLOSED ESCALATED }
-enum Plea        { GUILTY NOT_GUILTY }
+enum OriginType {
+  FACULTY
+  HOSTEL
+  GENERAL
+}
+
+enum CaseStatus {
+  COMPLAINT_FILED
+  STUDENT_NOTIFIED
+  AWAITING_RESPONSE
+  RESPONSE_RECEIVED
+  RESPONSE_OVERDUE
+  PANEL_CONSTITUTED
+  HEARING_SCHEDULED
+  HEARING_COMPLETE
+  VERDICT_DELIVERED
+  CLOSED
+  ESCALATED
+}
+
+enum Plea {
+  GUILTY
+  NOT_GUILTY
+}
 
 // ─── EVIDENCE ─────────────────────────────────────────────
 
@@ -180,7 +235,10 @@ model Evidence {
   uploadedAt    DateTime      @default(now())
 }
 
-enum SubmitterType { COMPLAINANT STUDENT }
+enum SubmitterType {
+  COMPLAINANT
+  STUDENT
+}
 
 // ─── PANEL ────────────────────────────────────────────────
 
@@ -205,7 +263,11 @@ model PanelMember {
   addedAt   DateTime  @default(now())
 }
 
-enum PanelRole { CHAIRPERSON SECRETARY MEMBER }
+enum PanelRole {
+  CHAIRPERSON
+  SECRETARY
+  MEMBER
+}
 
 // ─── NOTIFICATIONS ────────────────────────────────────────
 
@@ -225,22 +287,34 @@ model Notification {
   errorMessage    String?
 }
 
-enum NotificationType    { COMPLAINT_NOTICE RESPONSE_REMINDER RESPONSE_OVERDUE PANEL_CONSTITUTION APPEARANCE_NOTICE VERDICT_NOTICE INVITATION }
-enum NotificationChannel { EMAIL SMS }
+enum NotificationType {
+  COMPLAINT_NOTICE
+  RESPONSE_REMINDER
+  RESPONSE_OVERDUE
+  PANEL_CONSTITUTION
+  APPEARANCE_NOTICE
+  VERDICT_NOTICE
+  INVITATION
+}
+
+enum NotificationChannel {
+  EMAIL
+  SMS
+}
 
 // ─── AUDIT LOG ────────────────────────────────────────────
 
 model AuditLog {
-  id          String    @id @default(uuid())
+  id          String   @id @default(uuid())
   caseId      String?
-  case        Case?     @relation(fields: [caseId], references: [id])
+  case        Case?    @relation(fields: [caseId], references: [id])
   actorId     String?
-  actor       User?     @relation(fields: [actorId], references: [id])
+  actor       User?    @relation(fields: [actorId], references: [id])
   action      String
   description String
   metadata    Json?
   ipAddress   String?
-  timestamp   DateTime  @default(now())
+  timestamp   DateTime @default(now())
 }
 
 // ─── SYSTEM LOG ───────────────────────────────────────────
@@ -258,5 +332,17 @@ model SystemLog {
   createdAt     DateTime     @default(now())
 }
 
-enum LogLevel    { INFO WARNING ERROR CRITICAL }
-enum LogCategory { EMAIL SMS INTEGRATION SYSTEM AUTHENTICATION }
+enum LogLevel {
+  INFO
+  WARNING
+  ERROR
+  CRITICAL
+}
+
+enum LogCategory {
+  EMAIL
+  SMS
+  INTEGRATION
+  SYSTEM
+  AUTHENTICATION
+}

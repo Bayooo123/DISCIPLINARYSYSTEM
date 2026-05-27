@@ -1,0 +1,51 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mkdir -p \"c:\\\\Users\\\\DELL\\\\Documents\\\\disciplinary system\\\\backend\\\\src\\\\config\" \"c:\\\\Users\\\\DELL\\\\Documents\\\\disciplinary system\\\\backend\\\\src\\\\middleware\" \"c:\\\\Users\\\\DELL\\\\Documents\\\\disciplinary system\\\\backend\\\\src\\\\routes\" \"c:\\\\Users\\\\DELL\\\\Documents\\\\disciplinary system\\\\backend\\\\src\\\\services\" \"c:\\\\Users\\\\DELL\\\\Documents\\\\disciplinary system\\\\backend\\\\src\\\\db\" \"c:\\\\Users\\\\DELL\\\\Documents\\\\disciplinary system\\\\frontend\\\\src\\\\pages\\\\student\" \"c:\\\\Users\\\\DELL\\\\Documents\\\\disciplinary system\\\\frontend\\\\src\\\\pages\\\\officer\" \"c:\\\\Users\\\\DELL\\\\Documents\\\\disciplinary system\\\\frontend\\\\src\\\\pages\\\\committee\" \"c:\\\\Users\\\\DELL\\\\Documents\\\\disciplinary system\\\\frontend\\\\src\\\\pages\\\\admin\" \"c:\\\\Users\\\\DELL\\\\Documents\\\\disciplinary system\\\\frontend\\\\src\\\\components\" \"c:\\\\Users\\\\DELL\\\\Documents\\\\disciplinary system\\\\frontend\\\\src\\\\context\" \"c:\\\\Users\\\\DELL\\\\Documents\\\\disciplinary system\\\\frontend\\\\src\\\\lib\")",
+      "Read(//c/Users/DELL/.claude/projects/c--Users-DELL-Documents-disciplinary-system/memory/**)",
+      "Bash(git config *)",
+      "Bash(gh auth *)",
+      "Bash(git credential-manager *)",
+      "Bash(git credential *)",
+      "Bash(git init *)",
+      "Bash(git remote *)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(git push *)",
+      "Bash(del railway.json)",
+      "Bash(git rm *)",
+      "Bash(npm create *)",
+      "Bash(npm install *)",
+      "Bash(mkdir \"c:\\\\Users\\\\DELL\\\\Documents\\\\disciplinary system\\\\server\")",
+      "Bash(mkdir \"c:\\\\Users\\\\DELL\\\\Documents\\\\disciplinary system\\\\server\\\\src\")",
+      "Bash(mkdir \"c:\\\\Users\\\\DELL\\\\Documents\\\\disciplinary system\\\\server\\\\src\\\\routes\")",
+      "Bash(mkdir \"c:\\\\Users\\\\DELL\\\\Documents\\\\disciplinary system\\\\server\\\\src\\\\controllers\")",
+      "Bash(mkdir \"c:\\\\Users\\\\DELL\\\\Documents\\\\disciplinary system\\\\server\\\\src\\\\middleware\")",
+      "Bash(npx tailwindcss *)",
+      "Bash(node_modules/.bin/tailwindcss init *)",
+      "Bash(npm init *)",
+      "Bash(npm run *)",
+      "Bash(npx prisma *)",
+      "Bash(node -e \"require\\('dotenv'\\).config\\(\\); console.log\\(process.env.DATABASE_URL ? 'DATABASE_URL found' : 'NOT FOUND'\\)\")",
+      "Bash(npx --prefix server prisma migrate dev --schema prisma/schema.prisma --name init)",
+      "Bash(set DATABASE_URL=postgresql://postgres.zqxbnunnbtthpnqrcpyv:Acesolicitors123%23@aws-0-eu-west-2.pooler.supabase.com:5432/postgres?sslmode=require)",
+      "Bash(npx --prefix server prisma db push --schema prisma/schema.prisma)",
+      "Bash(powershell -Command \"Test-NetConnection -ComputerName db.zqxbnunnbtthpnqrcpyv.supabase.co -Port 5432 -InformationLevel Quiet\")",
+      "Bash(npx --prefix server prisma migrate diff --from-empty --to-schema-datamodel prisma/schema.prisma --script)",
+      "Bash(node -e ' *)",
+      "Bash(powershell -Command \"Test-NetConnection -ComputerName aws-0-eu-west-2.pooler.supabase.com -Port 5432 -InformationLevel Quiet\")",
+      "Bash(node prisma/seed.js)",
+      "Bash(npx --prefix server prisma generate --schema prisma/schema.prisma)",
+      "Bash(npx nodemon *)",
+      "Bash(powershell -Command \"Start-Sleep -Seconds 4\")",
+      "Bash(curl -s -X POST http://localhost:5000/api/auth/login -H \"Content-Type: application/json\" -d \"{\\\\\"email\\\\\":\\\\\"admin@unilag.edu.ng\\\\\",\\\\\"password\\\\\":\\\\\"TIDDSunilag2025!\\\\\"}\")",
+      "Bash(curl -s -X POST http://localhost:5000/api/auth/login -H 'Content-Type: application/json' -d '{\\\\\"email\\\\\":\\\\\"admin@reformadigital.com\\\\\",\\\\\"password\\\\\":\\\\\"Reforma2025!\\\\\"}')",
+      "Bash(curl -s http://localhost:5000/api/dashboard/reforma -H \"Authorization: Bearer $\\(curl -s -X POST http://localhost:5000/api/auth/login -H 'Content-Type: application/json' -d '{\\\\\"email\\\\\":\\\\\"admin@reformadigital.com\\\\\",\\\\\"password\\\\\":\\\\\"Reforma2025!\\\\\"}')",
+      "Read(//c/Users/DELL/AppData/Local/Temp/**)",
+      "Bash(node --input-type=module)"
+    ],
+    "additionalDirectories": [
+      "c:\\Users\\DELL\\Documents\\disciplinary system\\backend\\src"
+    ]
+  }
+}

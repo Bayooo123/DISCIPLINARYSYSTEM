@@ -7,11 +7,17 @@ import {
 
 const router = Router({ mergeParams: true });
 
-const guard = [requireAuth, requireRole(['PLATFORM_ADMIN', 'INSTITUTION_ADMIN']), requireSameInstitution];
+const readRoles  = ['PLATFORM_ADMIN', 'INSTITUTION_ADMIN', 'COMPLAINTS_OFFICER', 'COMMITTEE_MEMBER', 'PANEL_MEMBER'];
+const writeRoles = ['PLATFORM_ADMIN', 'INSTITUTION_ADMIN'];
 
-router.get('/',       ...guard, listOffenceTypes);
-router.post('/',      ...guard, createOffenceType);
-router.patch('/:id',  ...guard, updateOffenceType);
-router.delete('/:id', ...guard, deleteOffenceType);
+router.get('/',
+  requireAuth,
+  requireRole(readRoles),
+  requireSameInstitution,
+  listOffenceTypes,
+);
+router.post('/',      requireAuth, requireRole(writeRoles), requireSameInstitution, createOffenceType);
+router.patch('/:id',  requireAuth, requireRole(writeRoles), requireSameInstitution, updateOffenceType);
+router.delete('/:id', requireAuth, requireRole(writeRoles), requireSameInstitution, deleteOffenceType);
 
 export default router;

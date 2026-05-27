@@ -1,4 +1,5 @@
-import { PrismaClient } from '@prisma/client';
+import pkg from '@prisma/client';
+const { PrismaClient } = pkg;
 import { hashPassword, generateInviteToken } from '../utils/crypto.utils.js';
 import { dispatchEmail, invitationEmailHtml } from '../services/notification.service.js';
 

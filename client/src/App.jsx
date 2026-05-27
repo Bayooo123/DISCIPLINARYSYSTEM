@@ -19,6 +19,11 @@ import OffenceTypes       from './pages/institution-admin/OffenceTypes';
 import Configuration      from './pages/institution-admin/Configuration';
 import InstitutionLogs    from './pages/institution-admin/InstitutionLogs';
 
+import OfficerDashboard   from './pages/officer/OfficerDashboard';
+import FileComplaint      from './pages/officer/FileComplaint';
+import MyCases            from './pages/officer/MyCases';
+import CaseDetail         from './pages/officer/CaseDetail';
+
 function RequireAuth({ children, roles }) {
   const { user, loading } = useAuth();
   if (loading) return <FullPageSpinner />;
@@ -31,8 +36,11 @@ function RoleRouter() {
   const { user, loading } = useAuth();
   if (loading) return <FullPageSpinner />;
   if (!user) return <Navigate to="/login" replace />;
-  if (user.role === 'PLATFORM_ADMIN')    return <Navigate to="/admin/dashboard" replace />;
+  if (user.role === 'PLATFORM_ADMIN')     return <Navigate to="/admin/dashboard" replace />;
   if (user.role === 'INSTITUTION_ADMIN') return <Navigate to="/institution/dashboard" replace />;
+  if (user.role === 'COMPLAINTS_OFFICER') return <Navigate to="/officer/dashboard" replace />;
+  if (user.role === 'COMMITTEE_MEMBER')  return <Navigate to="/officer/dashboard" replace />;
+  if (user.role === 'PANEL_MEMBER')      return <Navigate to="/officer/dashboard" replace />;
   return <Navigate to="/login" replace />;
 }
 
@@ -81,6 +89,28 @@ export default function App() {
             } />
             <Route path="/institution/logs" element={
               <RequireAuth roles={['INSTITUTION_ADMIN', 'PLATFORM_ADMIN']}><InstitutionLogs /></RequireAuth>
+            } />
+
+            {/* ── Officer / Complaints ──────────────────── */}
+            <Route path="/officer/dashboard" element={
+              <RequireAuth roles={['COMPLAINTS_OFFICER', 'COMMITTEE_MEMBER', 'PANEL_MEMBER', 'INSTITUTION_ADMIN']}>
+                <OfficerDashboard />
+              </RequireAuth>
+            } />
+            <Route path="/officer/cases/new" element={
+              <RequireAuth roles={['COMPLAINTS_OFFICER', 'INSTITUTION_ADMIN']}>
+                <FileComplaint />
+              </RequireAuth>
+            } />
+            <Route path="/officer/cases/:id" element={
+              <RequireAuth roles={['COMPLAINTS_OFFICER', 'COMMITTEE_MEMBER', 'PANEL_MEMBER', 'INSTITUTION_ADMIN']}>
+                <CaseDetail />
+              </RequireAuth>
+            } />
+            <Route path="/officer/cases" element={
+              <RequireAuth roles={['COMPLAINTS_OFFICER', 'COMMITTEE_MEMBER', 'PANEL_MEMBER', 'INSTITUTION_ADMIN']}>
+                <MyCases />
+              </RequireAuth>
             } />
 
             <Route path="/unauthorized" element={
