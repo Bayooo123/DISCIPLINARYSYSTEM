@@ -29,16 +29,17 @@ export async function lookupStudent(matricNumber, institution) {
         const data = await response.json();
         const student = await prisma.student.create({
           data: {
-            institutionId: institution.id,
-            matricNumber:  data.matricNumber,
-            firstName:     data.firstName,
-            lastName:      data.lastName,
-            email:         data.email,
-            phone:         data.phone   || null,
-            faculty:       data.faculty,
-            department:    data.department || null,
-            level:         data.level,
-            gpa:           data.gpa    || null,
+            institutionId:   institution.id,
+            matricNumber:    data.matricNumber,
+            firstName:       data.firstName,
+            lastName:        data.lastName,
+            email:           data.email,
+            phone:           data.phone          || null,
+            faculty:         data.faculty,
+            department:      data.department     || null,
+            level:           data.level,
+            yearOfAdmission: data.yearOfAdmission || null,
+            gpa:             data.gpa            || null,
           },
         });
         return { ...student, priorCaseCount: 0, source: 'SIS' };

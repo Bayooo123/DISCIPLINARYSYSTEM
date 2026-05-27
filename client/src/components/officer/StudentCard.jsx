@@ -24,6 +24,7 @@ export default function StudentCard({ student, onClear }) {
           <span>{student.faculty}</span>
           {student.department && student.department !== student.faculty && <span>{student.department}</span>}
           <span>{student.level}</span>
+          {student.yearOfAdmission && <span>Admitted {student.yearOfAdmission}</span>}
           {student.email && <span>{student.email}</span>}
         </div>
         {student.priorCaseCount > 0 && (

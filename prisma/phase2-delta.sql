@@ -53,22 +53,26 @@ END $$;
 
 -- 3. Student table ──────────────────────────────────
 CREATE TABLE IF NOT EXISTS "Student" (
-    "id"            TEXT        NOT NULL,
-    "institutionId" TEXT        NOT NULL,
-    "matricNumber"  TEXT        NOT NULL,
-    "firstName"     TEXT        NOT NULL,
-    "lastName"      TEXT        NOT NULL,
-    "email"         TEXT        NOT NULL,
-    "phone"         TEXT,
-    "faculty"       TEXT        NOT NULL,
-    "department"    TEXT,
-    "level"         TEXT        NOT NULL,
-    "gpa"           DOUBLE PRECISION,
-    "portalUserId"  TEXT,
-    "isActive"      BOOLEAN     NOT NULL DEFAULT true,
-    "createdAt"     TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "id"              TEXT             NOT NULL,
+    "institutionId"   TEXT             NOT NULL,
+    "matricNumber"    TEXT             NOT NULL,
+    "firstName"       TEXT             NOT NULL,
+    "lastName"        TEXT             NOT NULL,
+    "email"           TEXT             NOT NULL,
+    "phone"           TEXT,
+    "faculty"         TEXT             NOT NULL,
+    "department"      TEXT,
+    "level"           TEXT             NOT NULL,
+    "yearOfAdmission" INTEGER,
+    "gpa"             DOUBLE PRECISION,
+    "portalUserId"    TEXT,
+    "isActive"        BOOLEAN          NOT NULL DEFAULT true,
+    "createdAt"       TIMESTAMP(3)     NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT "Student_pkey" PRIMARY KEY ("id")
 );
+
+-- If Student table already existed from a prior run, add the column
+ALTER TABLE "Student" ADD COLUMN IF NOT EXISTS "yearOfAdmission" INTEGER;
 
 CREATE UNIQUE INDEX IF NOT EXISTS "Student_matricNumber_key" ON "Student"("matricNumber");
 CREATE UNIQUE INDEX IF NOT EXISTS "Student_email_key" ON "Student"("email");

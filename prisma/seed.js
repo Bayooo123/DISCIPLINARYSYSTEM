@@ -183,16 +183,16 @@ async function main() {
 
   // ── 6. Students ────────────────────────────────────────────
   const students = [
-    { matricNumber: 'LAW/2022/087', firstName: 'Oluwaseun',  lastName: 'Adeleke',   email: 'o.adeleke.187@unilag.edu.ng',   faculty: 'Faculty of Law',        department: 'Private Law',          level: '300L' },
-    { matricNumber: 'ENG/2021/043', firstName: 'Chidera',    lastName: 'Okonkwo',   email: 'c.okonkwo.943@unilag.edu.ng',  faculty: 'Faculty of Engineering', department: 'Electrical Engineering', level: '400L' },
-    { matricNumber: 'SOC/2023/112', firstName: 'Aminat',     lastName: 'Balogun',   email: 'a.balogun.112@unilag.edu.ng',  faculty: 'Faculty of Social Sciences', department: 'Sociology',         level: '200L' },
-    { matricNumber: 'MED/2020/009', firstName: 'Chukwudi',   lastName: 'Nwachukwu', email: 'c.nwachukwu.9@unilag.edu.ng', faculty: 'College of Medicine',    department: 'Medicine & Surgery',   level: '500L' },
-    { matricNumber: 'ART/2022/076', firstName: 'Fatimah',    lastName: 'Adesanya',  email: 'f.adesanya.76@unilag.edu.ng', faculty: 'Faculty of Arts',        department: 'English',              level: '300L' },
-    { matricNumber: 'BUS/2023/204', firstName: 'Emeka',      lastName: 'Eze',       email: 'e.eze.204@unilag.edu.ng',      faculty: 'Faculty of Business Admin', department: 'Accounting',        level: '200L' },
-    { matricNumber: 'SCI/2021/055', firstName: 'Ngozi',      lastName: 'Obiora',    email: 'n.obiora.55@unilag.edu.ng',   faculty: 'Faculty of Science',     department: 'Chemistry',            level: '400L' },
-    { matricNumber: 'LAW/2023/031', firstName: 'Adewale',    lastName: 'Ogunleye',  email: 'a.ogunleye.31@unilag.edu.ng', faculty: 'Faculty of Law',         department: 'Public Law',           level: '200L' },
-    { matricNumber: 'ENG/2022/098', firstName: 'Blessing',   lastName: 'Nwosu',     email: 'b.nwosu.98@unilag.edu.ng',    faculty: 'Faculty of Engineering', department: 'Civil Engineering',    level: '300L' },
-    { matricNumber: 'ENV/2021/062', firstName: 'Tunde',      lastName: 'Adebisi',   email: 't.adebisi.62@unilag.edu.ng',  faculty: 'Faculty of Environmental Sciences', department: 'Urban Planning', level: '400L' },
+    { matricNumber: 'LAW/2022/087', firstName: 'Oluwaseun',  lastName: 'Adeleke',   email: 'o.adeleke.187@unilag.edu.ng',   faculty: 'Faculty of Law',                    department: 'Private Law',            level: '300L', yearOfAdmission: 2022 },
+    { matricNumber: 'ENG/2021/043', firstName: 'Chidera',    lastName: 'Okonkwo',   email: 'c.okonkwo.943@unilag.edu.ng',  faculty: 'Faculty of Engineering',            department: 'Electrical Engineering',  level: '400L', yearOfAdmission: 2021 },
+    { matricNumber: 'SOC/2023/112', firstName: 'Aminat',     lastName: 'Balogun',   email: 'a.balogun.112@unilag.edu.ng',  faculty: 'Faculty of Social Sciences',        department: 'Sociology',               level: '200L', yearOfAdmission: 2023 },
+    { matricNumber: 'MED/2020/009', firstName: 'Chukwudi',   lastName: 'Nwachukwu', email: 'c.nwachukwu.9@unilag.edu.ng', faculty: 'College of Medicine',               department: 'Medicine & Surgery',      level: '500L', yearOfAdmission: 2020 },
+    { matricNumber: 'ART/2022/076', firstName: 'Fatimah',    lastName: 'Adesanya',  email: 'f.adesanya.76@unilag.edu.ng', faculty: 'Faculty of Arts',                   department: 'English',                 level: '300L', yearOfAdmission: 2022 },
+    { matricNumber: 'BUS/2023/204', firstName: 'Emeka',      lastName: 'Eze',       email: 'e.eze.204@unilag.edu.ng',      faculty: 'Faculty of Business Administration', department: 'Accounting',              level: '200L', yearOfAdmission: 2023 },
+    { matricNumber: 'SCI/2021/055', firstName: 'Ngozi',      lastName: 'Obiora',    email: 'n.obiora.55@unilag.edu.ng',   faculty: 'Faculty of Science',                department: 'Chemistry',               level: '400L', yearOfAdmission: 2021 },
+    { matricNumber: 'LAW/2023/031', firstName: 'Adewale',    lastName: 'Ogunleye',  email: 'a.ogunleye.31@unilag.edu.ng', faculty: 'Faculty of Law',                    department: 'Public Law',              level: '200L', yearOfAdmission: 2023 },
+    { matricNumber: 'ENG/2022/098', firstName: 'Blessing',   lastName: 'Nwosu',     email: 'b.nwosu.98@unilag.edu.ng',    faculty: 'Faculty of Engineering',            department: 'Civil Engineering',       level: '300L', yearOfAdmission: 2022 },
+    { matricNumber: 'ENV/2021/062', firstName: 'Tunde',      lastName: 'Adebisi',   email: 't.adebisi.62@unilag.edu.ng',  faculty: 'Faculty of Environmental Sciences', department: 'Urban Planning',          level: '400L', yearOfAdmission: 2021 },
   ];
 
   const createdStudents = {};

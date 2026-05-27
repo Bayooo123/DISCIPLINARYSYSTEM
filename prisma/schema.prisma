@@ -103,12 +103,13 @@ model Student {
   phone         String?
   faculty       String
   department    String?
-  level         String
-  gpa           Float?
-  portalUserId  String?
-  isActive      Boolean  @default(true)
-  createdAt     DateTime @default(now())
-  cases         Case[]
+  level           String
+  yearOfAdmission Int?
+  gpa             Float?
+  portalUserId    String?
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  cases           Case[]
 }
 
 // ─── OFFENCE TYPE ─────────────────────────────────────────
