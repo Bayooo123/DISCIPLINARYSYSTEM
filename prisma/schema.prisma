@@ -1,0 +1,262 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── INSTITUTION ──────────────────────────────────────────
+
+model Institution {
+  id              String    @id @default(uuid())
+  name            String
+  slug            String    @unique
+  shortName       String?
+  logoUrl         String?
+  primaryColor    String    @default("#7B1C1C")
+  secondaryColor  String    @default("#C9930A")
+  address         String?
+  website         String?
+  contactEmail    String?
+  contactPhone    String?
+  country         String    @default("Nigeria")
+  state           String?
+  smtpHost        String?
+  smtpPort        Int?
+  smtpUser        String?
+  smtpPass        String?
+  emailFromName   String?
+  emailFromAddr   String?
+  smsEnabled      Boolean   @default(false)
+  smsSenderId     String?
+  sisApiUrl       String?
+  sisApiKey       String?
+  licenceStatus   LicenceStatus @default(ACTIVE)
+  licenceStart    DateTime?
+  licenceEnd      DateTime?
+  contractRef     String?
+  notes           String?   @db.Text
+  isActive        Boolean   @default(true)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  users           User[]
+  cases           Case[]
+  panels          Panel[]
+  offenceTypes    OffenceType[]
+  systemLogs      SystemLog[]
+}
+
+enum LicenceStatus {
+  ACTIVE
+  TRIAL
+  SUSPENDED
+  EXPIRED
+}
+
+// ─── USER ─────────────────────────────────────────────────
+
+model User {
+  id               String    @id @default(uuid())
+  institutionId    String?
+  institution      Institution? @relation(fields: [institutionId], references: [id])
+  email            String    @unique
+  passwordHash     String
+  firstName        String
+  lastName         String
+  phone            String?
+  role             Role
+  department       String?
+  jobTitle         String?
+  avatarUrl        String?
+  isActive         Boolean   @default(true)
+  lastLoginAt      DateTime?
+  inviteToken      String?
+  inviteExpiry     DateTime?
+  inviteAccepted   Boolean   @default(false)
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  casesAsFiler     Case[]    @relation("FiledBy")
+  panelMemberships PanelMember[]
+  auditLogs        AuditLog[]
+}
+
+enum Role {
+  PLATFORM_ADMIN
+  INSTITUTION_ADMIN
+  COMMITTEE_MEMBER
+  PANEL_MEMBER
+  COMPLAINTS_OFFICER
+  STUDENT
+}
+
+// ─── STUDENT ──────────────────────────────────────────────
+
+model Student {
+  id            String   @id @default(uuid())
+  institutionId String
+  matricNumber  String   @unique
+  firstName     String
+  lastName      String
+  email         String   @unique
+  phone         String?
+  faculty       String
+  department    String?
+  level         String
+  gpa           Float?
+  portalUserId  String?
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  cases         Case[]
+}
+
+// ─── OFFENCE TYPE ─────────────────────────────────────────
+
+model OffenceType {
+  id            String      @id @default(uuid())
+  institutionId String
+  institution   Institution @relation(fields: [institutionId], references: [id])
+  name          String
+  category      String
+  description   String?
+  isActive      Boolean     @default(true)
+  createdAt     DateTime    @default(now())
+  cases         Case[]
+}
+
+// ─── CASE ─────────────────────────────────────────────────
+
+model Case {
+  id                String      @id @default(uuid())
+  referenceNumber   String      @unique
+  institutionId     String
+  institution       Institution @relation(fields: [institutionId], references: [id])
+  studentId         String
+  student           Student     @relation(fields: [studentId], references: [id])
+  filedById         String
+  filedBy           User        @relation("FiledBy", fields: [filedById], references: [id])
+  offenceTypeId     String
+  offenceType       OffenceType @relation(fields: [offenceTypeId], references: [id])
+  originType        OriginType
+  description       String      @db.Text
+  incidentDate      DateTime
+  incidentLocation  String?
+  filedAt           DateTime    @default(now())
+  status            CaseStatus  @default(COMPLAINT_FILED)
+  responseDeadline  DateTime
+  studentResponse   String?     @db.Text
+  studentResponseAt DateTime?
+  plea              Plea?
+  panelId           String?
+  panel             Panel?      @relation(fields: [panelId], references: [id])
+  hearingDate       DateTime?
+  hearingVenue      String?
+  verdict           String?     @db.Text
+  penalty           String?
+  verdictAt         DateTime?
+  closedAt          DateTime?
+  evidence          Evidence[]
+  notifications     Notification[]
+  auditLogs         AuditLog[]
+}
+
+enum OriginType  { FACULTY HOSTEL GENERAL }
+enum CaseStatus  { COMPLAINT_FILED STUDENT_NOTIFIED AWAITING_RESPONSE RESPONSE_RECEIVED RESPONSE_OVERDUE PANEL_CONSTITUTED HEARING_SCHEDULED HEARING_COMPLETE VERDICT_DELIVERED CLOSED ESCALATED }
+enum Plea        { GUILTY NOT_GUILTY }
+
+// ─── EVIDENCE ─────────────────────────────────────────────
+
+model Evidence {
+  id            String        @id @default(uuid())
+  caseId        String
+  case          Case          @relation(fields: [caseId], references: [id])
+  uploadedById  String
+  submittedBy   SubmitterType
+  fileName      String
+  fileUrl       String
+  fileType      String
+  fileSize      Int
+  uploadedAt    DateTime      @default(now())
+}
+
+enum SubmitterType { COMPLAINANT STUDENT }
+
+// ─── PANEL ────────────────────────────────────────────────
+
+model Panel {
+  id            String        @id @default(uuid())
+  institutionId String
+  institution   Institution   @relation(fields: [institutionId], references: [id])
+  name          String
+  isActive      Boolean       @default(true)
+  createdAt     DateTime      @default(now())
+  members       PanelMember[]
+  cases         Case[]
+}
+
+model PanelMember {
+  id        String    @id @default(uuid())
+  panelId   String
+  panel     Panel     @relation(fields: [panelId], references: [id])
+  userId    String
+  user      User      @relation(fields: [userId], references: [id])
+  panelRole PanelRole
+  addedAt   DateTime  @default(now())
+}
+
+enum PanelRole { CHAIRPERSON SECRETARY MEMBER }
+
+// ─── NOTIFICATIONS ────────────────────────────────────────
+
+model Notification {
+  id              String              @id @default(uuid())
+  caseId          String?
+  case            Case?               @relation(fields: [caseId], references: [id])
+  recipientEmail  String
+  recipientPhone  String?
+  type            NotificationType
+  channel         NotificationChannel
+  subject         String?
+  body            String              @db.Text
+  sentAt          DateTime            @default(now())
+  deliveredAt     DateTime?
+  status          String              @default("SENT")
+  errorMessage    String?
+}
+
+enum NotificationType    { COMPLAINT_NOTICE RESPONSE_REMINDER RESPONSE_OVERDUE PANEL_CONSTITUTION APPEARANCE_NOTICE VERDICT_NOTICE INVITATION }
+enum NotificationChannel { EMAIL SMS }
+
+// ─── AUDIT LOG ────────────────────────────────────────────
+
+model AuditLog {
+  id          String    @id @default(uuid())
+  caseId      String?
+  case        Case?     @relation(fields: [caseId], references: [id])
+  actorId     String?
+  actor       User?     @relation(fields: [actorId], references: [id])
+  action      String
+  description String
+  metadata    Json?
+  ipAddress   String?
+  timestamp   DateTime  @default(now())
+}
+
+// ─── SYSTEM LOG ───────────────────────────────────────────
+
+model SystemLog {
+  id            String       @id @default(uuid())
+  institutionId String?
+  institution   Institution? @relation(fields: [institutionId], references: [id])
+  level         LogLevel
+  category      LogCategory
+  message       String
+  detail        String?      @db.Text
+  metadata      Json?
+  resolvedAt    DateTime?
+  createdAt     DateTime     @default(now())
+}
+
+enum LogLevel    { INFO WARNING ERROR CRITICAL }
+enum LogCategory { EMAIL SMS INTEGRATION SYSTEM AUTHENTICATION }

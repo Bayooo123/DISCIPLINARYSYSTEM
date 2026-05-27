@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15
+    restart: always
+    environment:
+      POSTGRES_USER: tidds
+      POSTGRES_PASSWORD: tiddspassword
+      POSTGRES_DB: tidds_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  server:
+    build: ./server
+    restart: always
+    ports:
+      - "5000:5000"
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: postgresql://tidds:tiddspassword@db:5432/tidds_db
+      NODE_ENV: development
+    depends_on:
+      - db
+    volumes:
+      - ./server:/app
+      - /app/node_modules
+      - ./prisma:/prisma
+
+  client:
+    build: ./client
+    restart: always
+    ports:
+      - "5173:5173"
+    environment:
+      VITE_API_URL: http://localhost:5000/api
+    depends_on:
+      - server
+    volumes:
+      - ./client:/app
+      - /app/node_modules
+
+volumes:
+  pgdata:
