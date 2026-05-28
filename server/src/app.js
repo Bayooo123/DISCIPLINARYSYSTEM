@@ -24,6 +24,7 @@ const app = express();
 
 const allowedOrigins = [
   process.env.CLIENT_URL,
+  process.env.CLIENT_URL_ALT,
   process.env.STUDENT_PORTAL_URL,
 ].filter(Boolean);
 app.use(cors({
