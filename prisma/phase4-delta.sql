@@ -58,7 +58,12 @@ BEGIN
 END $$;
 
 -- ── Case: verdict fields ──────────────────────────────────────────────────────
-CREATE TYPE IF NOT EXISTS "VerdictFinding" AS ENUM ('UPHELD', 'DISMISSED', 'PARTIALLY_UPHELD');
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'VerdictFinding') THEN
+    CREATE TYPE "VerdictFinding" AS ENUM ('UPHELD', 'DISMISSED', 'PARTIALLY_UPHELD');
+  END IF;
+END $$;
 
 ALTER TABLE "Case"
   ADD COLUMN IF NOT EXISTS "verdictFinding"          "VerdictFinding",
@@ -89,7 +94,12 @@ END $$;
 ALTER TABLE "Panel"
   DROP COLUMN IF EXISTS "isActive";
 
-CREATE TYPE IF NOT EXISTS "PanelStatus" AS ENUM ('ACTIVE', 'CONCLUDED', 'DISSOLVED');
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'PanelStatus') THEN
+    CREATE TYPE "PanelStatus" AS ENUM ('ACTIVE', 'CONCLUDED', 'DISSOLVED');
+  END IF;
+END $$;
 
 ALTER TABLE "Panel"
   ADD COLUMN IF NOT EXISTS "caseId"      TEXT UNIQUE REFERENCES "Case"(id),
