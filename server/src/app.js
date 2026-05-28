@@ -15,6 +15,8 @@ import logRoutes          from './routes/logs.routes.js';
 import casesRoutes        from './routes/cases.routes.js';
 import studentsRoutes     from './routes/students.routes.js';
 import studentRoutes      from './routes/student.routes.js';
+import committeeRoutes    from './routes/committee.routes.js';
+import panelRoutes        from './routes/panel.routes.js';
 
 dotenv.config({ path: path.resolve(__dirname, '../../.env') });
 
@@ -44,6 +46,8 @@ app.use('/api/logs',                                  logRoutes);
 app.use('/api/cases',                                 casesRoutes);
 app.use('/api/students',                              studentsRoutes);
 app.use('/api/student',                               studentRoutes);
+app.use('/api/committee',                             committeeRoutes);
+app.use('/api/panel',                                 panelRoutes);
 
 app.get('/api/health', (req, res) => res.json({ status: 'ok' }));
 

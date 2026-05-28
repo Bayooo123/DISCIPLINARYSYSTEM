@@ -297,7 +297,266 @@ async function main() {
     console.log('Case: DSC-2025-002 (Aminat Balogun — AWAITING_RESPONSE)');
   }
 
-  // ── 8. System Log Entries ──────────────────────────────────
+  // ── 8. Phase 4 Users ──────────────────────────────────────
+  const chairmanHash = await bcrypt.hash('Chairman2025!', 12);
+  const chairman = await prisma.user.upsert({
+    where:  { email: 'chairman@unilag.edu.ng' },
+    update: { isActive: true, inviteAccepted: true },
+    create: {
+      institutionId:  unilag.id,
+      email:          'chairman@unilag.edu.ng',
+      passwordHash:   chairmanHash,
+      firstName:      'Akinwale',
+      lastName:       'Babatunde-Osei',
+      role:           'COMMITTEE_MEMBER',
+      isChairman:     true,
+      department:     'Registry',
+      jobTitle:       'Chairman, Disciplinary Committee',
+      isActive:       true,
+      inviteAccepted: true,
+    },
+  });
+  console.log(`Chairman: ${chairman.firstName} ${chairman.lastName}`);
+
+  const panelHash = await bcrypt.hash('Panel2025!', 12);
+  const maryam = await prisma.user.upsert({
+    where:  { email: 'maryam.aliyu@unilag.edu.ng' },
+    update: { isActive: true, inviteAccepted: true },
+    create: {
+      institutionId:  unilag.id,
+      email:          'maryam.aliyu@unilag.edu.ng',
+      passwordHash:   panelHash,
+      firstName:      'Maryam',
+      lastName:       'Aliyu',
+      role:           'PANEL_MEMBER',
+      department:     'Faculty of Social Sciences',
+      jobTitle:       'Associate Dean',
+      isActive:       true,
+      inviteAccepted: true,
+    },
+  });
+  console.log(`Panel Member: ${maryam.firstName} ${maryam.lastName}`);
+
+  // Activate the Phase 1 panel members so they can log in for testing
+  await prisma.user.update({
+    where: { email: 'b.fashola@unilag.edu.ng' },
+    data:  { isActive: true, inviteAccepted: true, passwordHash: panelHash },
+  });
+  await prisma.user.update({
+    where: { email: 'e.chibuike@unilag.edu.ng' },
+    data:  { isActive: true, inviteAccepted: true, passwordHash: panelHash },
+  });
+  const panelChair = await prisma.user.findUnique({ where: { email: 'b.fashola@unilag.edu.ng' } });
+  const panelSec   = await prisma.user.findUnique({ where: { email: 'e.chibuike@unilag.edu.ng' } });
+
+  // ── 9. Phase 4 Cases ──────────────────────────────────────
+
+  // DSC-2025-003 — PANEL_CONSTITUTED (Oluwaseun Adeleke, Plagiarism)
+  const existingCase3 = await prisma.case.findFirst({
+    where: { institutionId: unilag.id, referenceNumber: 'DSC-2025-003' },
+  });
+  if (!existingCase3) {
+    const s3 = createdStudents['LAW/2022/087'];
+    const c3 = await prisma.case.create({
+      data: {
+        referenceNumber:      'DSC-2025-003',
+        institutionId:        unilag.id,
+        studentId:            s3.id,
+        filedById:            lawOfficer.id,
+        originType:           'FACULTY',
+        description:          'Student submitted a research paper for LAW 312 (Jurisprudence) that was found to contain substantial unattributed passages lifted verbatim from published academic texts. Turnitin similarity score: 74%. The student has previously received a verbal warning for similar conduct.',
+        incidentDate:         new Date('2026-01-20'),
+        incidentLocation:     'Faculty of Law',
+        courseCode:           'LAW 312',
+        courseTitle:          'Jurisprudence',
+        filedAt:              new Date('2026-01-22T08:00:00Z'),
+        responseDeadline:     new Date('2026-01-29T23:59:00Z'),
+        status:               'PANEL_CONSTITUTED',
+        studentAccessToken:   crypto.randomUUID(),
+        studentAccessExpiry:  new Date(Date.now() + SEVENTY_TWO_HOURS),
+        studentResponseLocked: true,
+        studentResponse:      'I acknowledge using some sources without proper citation. I was under time pressure and made poor decisions. I have never done this intentionally before.',
+        studentResponseAt:    new Date('2026-01-25T16:00:00Z'),
+        plea:                 'GUILTY',
+      },
+    });
+    await prisma.case.update({
+      where: { id: c3.id },
+      data:  { offences: { create: [{ offenceTypeId: createdOffences['Plagiarism'].id }] } },
+    });
+    const panel3 = await prisma.panel.create({
+      data: {
+        institutionId: unilag.id,
+        caseId:        c3.id,
+        name:          `Panel — DSC-2025-003`,
+        status:        'ACTIVE',
+        members: {
+          create: [
+            { userId: panelChair.id, panelRole: 'CHAIRPERSON' },
+            { userId: panelSec.id,   panelRole: 'SECRETARY' },
+            { userId: maryam.id,     panelRole: 'MEMBER' },
+          ],
+        },
+      },
+    });
+    await prisma.auditLog.createMany({
+      data: [
+        { caseId: c3.id, actorId: lawOfficer.id,  action: 'COMPLAINT_FILED',         description: 'Complaint filed against Oluwaseun Adeleke (LAW/2022/087) for Plagiarism.', timestamp: new Date('2026-01-22T08:00:00Z') },
+        { caseId: c3.id, actorId: null,            action: 'STUDENT_NOTIFIED_EMAIL',  description: 'Notification email sent to student.', timestamp: new Date('2026-01-22T08:01:00Z') },
+        { caseId: c3.id, actorId: null,            action: 'STUDENT_RESPONSE_RECEIVED', description: 'Student submitted response. Plea: GUILTY.', timestamp: new Date('2026-01-25T16:00:00Z') },
+        { caseId: c3.id, actorId: chairman.id,     action: 'PANEL_CONSTITUTED',       description: `Panel constituted for DSC-2025-003 by Chairman Akinwale Babatunde-Osei. Members: Babatunde Fashola (CHAIRPERSON), Emeka Chibuike (SECRETARY), Maryam Aliyu (MEMBER).`, timestamp: new Date('2026-01-28T10:00:00Z') },
+      ],
+    });
+    console.log('Case: DSC-2025-003 (Oluwaseun Adeleke — PANEL_CONSTITUTED)');
+  }
+
+  // DSC-2025-004 — HEARING_SCHEDULED (Fatimah Adesanya, Cyberbullying)
+  const existingCase4 = await prisma.case.findFirst({
+    where: { institutionId: unilag.id, referenceNumber: 'DSC-2025-004' },
+  });
+  if (!existingCase4) {
+    const s4 = createdStudents['ART/2022/076'];
+    const c4 = await prisma.case.create({
+      data: {
+        referenceNumber:      'DSC-2025-004',
+        institutionId:        unilag.id,
+        studentId:            s4.id,
+        filedById:            genOfficer.id,
+        originType:           'STUDENT',
+        description:          'Student created and administered an anonymous social-media account used to post defamatory and threatening messages targeting three fellow students and a lecturer. Screenshots were provided by the complainants. Digital forensics confirmed the account was operated from the student\'s device IP.',
+        incidentDate:         new Date('2026-02-01'),
+        incidentLocation:     'Online (Instagram / WhatsApp)',
+        filedAt:              new Date('2026-02-05T11:30:00Z'),
+        responseDeadline:     new Date('2026-02-12T23:59:00Z'),
+        status:               'HEARING_SCHEDULED',
+        hearingDate:          new Date('2026-06-10T00:00:00Z'),
+        hearingTime:          '10:00 AM',
+        hearingVenue:         "Vice-Chancellor's Conference Room",
+        penaltyRange:         '1–4 semester rustication depending on severity',
+        studentAccessToken:   crypto.randomUUID(),
+        studentAccessExpiry:  new Date(Date.now() + SEVENTY_TWO_HOURS),
+        studentResponseLocked: true,
+        studentResponse:      'The account was not operated by me. My phone was stolen for two weeks during this period. I have reported this to campus security. I am not responsible for those messages.',
+        studentResponseAt:    new Date('2026-02-09T09:00:00Z'),
+        plea:                 'NOT_GUILTY',
+      },
+    });
+    await prisma.case.update({
+      where: { id: c4.id },
+      data:  { offences: { create: [{ offenceTypeId: createdOffences['Cyberbullying / Online Harassment'].id }] } },
+    });
+    await prisma.panel.create({
+      data: {
+        institutionId: unilag.id,
+        caseId:        c4.id,
+        name:          'Panel — DSC-2025-004',
+        status:        'ACTIVE',
+        members: {
+          create: [
+            { userId: panelChair.id, panelRole: 'CHAIRPERSON' },
+            { userId: panelSec.id,   panelRole: 'SECRETARY' },
+            { userId: maryam.id,     panelRole: 'MEMBER' },
+          ],
+        },
+      },
+    });
+    await prisma.auditLog.createMany({
+      data: [
+        { caseId: c4.id, actorId: genOfficer.id,  action: 'COMPLAINT_FILED',           description: 'Complaint filed against Fatimah Adesanya (ART/2022/076) for Cyberbullying / Online Harassment.', timestamp: new Date('2026-02-05T11:30:00Z') },
+        { caseId: c4.id, actorId: null,            action: 'STUDENT_NOTIFIED_EMAIL',    description: 'Notification email sent to student.', timestamp: new Date('2026-02-05T11:31:00Z') },
+        { caseId: c4.id, actorId: null,            action: 'STUDENT_RESPONSE_RECEIVED', description: 'Student submitted response. Plea: NOT_GUILTY.', timestamp: new Date('2026-02-09T09:00:00Z') },
+        { caseId: c4.id, actorId: chairman.id,     action: 'PANEL_CONSTITUTED',         description: 'Panel constituted for DSC-2025-004.', timestamp: new Date('2026-02-14T09:00:00Z') },
+        { caseId: c4.id, actorId: chairman.id,     action: 'HEARING_SCHEDULED',         description: "Hearing scheduled for DSC-2025-004 on 10 June 2026 at 10:00 AM in the Vice-Chancellor's Conference Room.", timestamp: new Date('2026-02-20T10:00:00Z') },
+      ],
+    });
+    console.log('Case: DSC-2025-004 (Fatimah Adesanya — HEARING_SCHEDULED)');
+  }
+
+  // DSC-2025-005 — CLOSED with full verdict (Chukwudi Nwachukwu, Impersonation)
+  const existingCase5 = await prisma.case.findFirst({
+    where: { institutionId: unilag.id, referenceNumber: 'DSC-2025-005' },
+  });
+  if (!existingCase5) {
+    const s5 = createdStudents['MED/2020/009'];
+    const effectiveDate  = new Date('2026-03-01T00:00:00Z');
+    const appealDeadline = new Date('2026-03-15T00:00:00Z');
+    const closedAt       = new Date('2026-02-28T14:00:00Z');
+    const c5 = await prisma.case.create({
+      data: {
+        referenceNumber:        'DSC-2025-005',
+        institutionId:          unilag.id,
+        studentId:              s5.id,
+        filedById:              lawOfficer.id,
+        originType:             'EXAMINATION',
+        description:            'Student paid another individual to sit his MBBS Year 4 Clinical Pharmacology examination. The impersonator was apprehended at the examination hall. Biometric checks confirmed mismatch with enrolled student record.',
+        incidentDate:           new Date('2025-11-28'),
+        incidentLocation:       'College of Medicine Examination Hall',
+        witnessName:            'Prof. Yetunde Adekola (Chief Medical Examiner)',
+        courseCode:             'MED 416',
+        courseTitle:            'Clinical Pharmacology',
+        filedAt:                new Date('2025-11-30T08:00:00Z'),
+        responseDeadline:       new Date('2025-12-07T23:59:00Z'),
+        status:                 'CLOSED',
+        closedAt,
+        hearingDate:            new Date('2026-02-10T00:00:00Z'),
+        hearingTime:            '09:00 AM',
+        hearingVenue:           'Dean of Medicine Office',
+        penaltyRange:           'Expulsion (mandatory per regulation)',
+        studentAccessToken:     crypto.randomUUID(),
+        studentAccessExpiry:    new Date(Date.now() + SEVENTY_TWO_HOURS),
+        studentResponseLocked:  true,
+        studentResponse:        'I was not present at the examination. I do not know who appeared in my name. I suspect someone may have used my credentials without my knowledge.',
+        studentResponseAt:      new Date('2025-12-04T11:00:00Z'),
+        plea:                   'NOT_GUILTY',
+        studentAppeared:        true,
+        verdictFinding:         'UPHELD',
+        verdictPenalty:         'Expulsion from the University of Lagos with immediate effect. Academic transcript annotated accordingly.',
+        verdictEffectiveDate:   effectiveDate,
+        hearingOutcome:         'The panel heard testimonies from the Chief Examiner, security personnel who apprehended the impersonator, and the student. Biometric evidence was conclusive. The student\'s denial was not credible in light of the evidence. Panel unanimously upheld all charges.',
+        verdictRecordedAt:      new Date('2026-02-25T15:00:00Z'),
+        verdictRecordedById:    panelChair.id,
+        verdictRatifiedAt:      closedAt,
+        verdictRatifiedById:    panelSec.id,
+        appealDeadline,
+        appealFiled:            false,
+      },
+    });
+    await prisma.case.update({
+      where: { id: c5.id },
+      data:  { offences: { create: [{ offenceTypeId: createdOffences['Examination Malpractice — Impersonation'].id }] } },
+    });
+    await prisma.panel.create({
+      data: {
+        institutionId: unilag.id,
+        caseId:        c5.id,
+        name:          'Panel — DSC-2025-005',
+        status:        'CONCLUDED',
+        members: {
+          create: [
+            { userId: panelChair.id, panelRole: 'CHAIRPERSON' },
+            { userId: panelSec.id,   panelRole: 'SECRETARY' },
+            { userId: maryam.id,     panelRole: 'MEMBER' },
+          ],
+        },
+      },
+    });
+    await prisma.auditLog.createMany({
+      data: [
+        { caseId: c5.id, actorId: lawOfficer.id,  action: 'COMPLAINT_FILED',           description: 'Complaint filed against Chukwudi Nwachukwu (MED/2020/009) for Examination Impersonation.', timestamp: new Date('2025-11-30T08:00:00Z') },
+        { caseId: c5.id, actorId: null,            action: 'STUDENT_NOTIFIED_EMAIL',    description: 'Notification sent to student.', timestamp: new Date('2025-11-30T08:01:00Z') },
+        { caseId: c5.id, actorId: null,            action: 'STUDENT_RESPONSE_RECEIVED', description: 'Student submitted response. Plea: NOT_GUILTY.', timestamp: new Date('2025-12-04T11:00:00Z') },
+        { caseId: c5.id, actorId: chairman.id,     action: 'PANEL_CONSTITUTED',         description: 'Panel constituted for DSC-2025-005.', timestamp: new Date('2025-12-10T10:00:00Z') },
+        { caseId: c5.id, actorId: chairman.id,     action: 'HEARING_SCHEDULED',         description: 'Hearing scheduled for 10 Feb 2026 at 09:00 AM in Dean of Medicine Office.', timestamp: new Date('2025-12-12T09:00:00Z') },
+        { caseId: c5.id, actorId: chairman.id,     action: 'STUDENT_APPEARED',          description: 'Student Chukwudi Nwachukwu appeared at hearing for DSC-2025-005.', timestamp: new Date('2026-02-10T09:05:00Z') },
+        { caseId: c5.id, actorId: panelChair.id,   action: 'VERDICT_RECORDED',          description: `Verdict recorded by Babatunde Fashola. Finding: UPHELD. Penalty: Expulsion.`, timestamp: new Date('2026-02-25T15:00:00Z') },
+        { caseId: c5.id, actorId: panelSec.id,     action: 'VERDICT_RATIFIED',          description: `Verdict ratified by Emeka Chibuike for DSC-2025-005. Case closed.`, timestamp: closedAt },
+        { caseId: c5.id, actorId: panelSec.id,     action: 'CASE_CLOSED',               description: `Case DSC-2025-005 closed. Student notified. Appeal deadline: 15 Mar 2026.`, timestamp: closedAt },
+      ],
+    });
+    console.log('Case: DSC-2025-005 (Chukwudi Nwachukwu — CLOSED, UPHELD, Expulsion)');
+  }
+
+  // ── 10. System Log Entries ─────────────────────────────────
   const now = new Date();
   const logs = [
     { level: 'INFO',    category: 'EMAIL',       message: 'Invitation email sent to c.okafor@unilag.edu.ng',    createdAt: new Date(now - 1 * 86400000) },
@@ -322,6 +581,10 @@ async function main() {
   console.log('  Law Officer:         a.nwosu@unilag.edu.ng / Officer2025!');
   console.log('  Hostel Officer:      s.adebayo@unilag.edu.ng / Officer2025!');
   console.log('  General Officer:     u.obiora@unilag.edu.ng / Officer2025!');
+  console.log('  Committee Chairman:  chairman@unilag.edu.ng / Chairman2025!');
+  console.log('  Panel Chairperson:   b.fashola@unilag.edu.ng / Panel2025!');
+  console.log('  Panel Secretary:     e.chibuike@unilag.edu.ng / Panel2025!');
+  console.log('  Panel Member:        maryam.aliyu@unilag.edu.ng / Panel2025!');
 }
 
 main()

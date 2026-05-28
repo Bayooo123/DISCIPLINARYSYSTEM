@@ -24,6 +24,19 @@ import FileComplaint      from './pages/officer/FileComplaint';
 import MyCases            from './pages/officer/MyCases';
 import CaseDetail         from './pages/officer/CaseDetail';
 
+import CommitteeDashboard    from './pages/committee/CommitteeDashboard';
+import CaseList              from './pages/committee/CaseList';
+import CommitteeCaseDetail   from './pages/committee/CommitteeCaseDetail';
+import Hearings              from './pages/committee/Hearings';
+import Analytics             from './pages/committee/Analytics';
+
+import PanelDashboard        from './pages/panel/PanelDashboard';
+import PanelCaseList         from './pages/panel/PanelCaseList';
+import PanelCaseDetail       from './pages/panel/PanelCaseDetail';
+
+const COMMITTEE_ROLES = ['COMMITTEE_MEMBER', 'INSTITUTION_ADMIN', 'PLATFORM_ADMIN'];
+const PANEL_ROLES_ARR = ['PANEL_MEMBER'];
+
 function RequireAuth({ children, roles }) {
   const { user, loading } = useAuth();
   if (loading) return <FullPageSpinner />;
@@ -37,10 +50,10 @@ function RoleRouter() {
   if (loading) return <FullPageSpinner />;
   if (!user) return <Navigate to="/login" replace />;
   if (user.role === 'PLATFORM_ADMIN')     return <Navigate to="/admin/dashboard" replace />;
-  if (user.role === 'INSTITUTION_ADMIN') return <Navigate to="/institution/dashboard" replace />;
+  if (user.role === 'INSTITUTION_ADMIN')  return <Navigate to="/institution/dashboard" replace />;
   if (user.role === 'COMPLAINTS_OFFICER') return <Navigate to="/officer/dashboard" replace />;
-  if (user.role === 'COMMITTEE_MEMBER')  return <Navigate to="/officer/dashboard" replace />;
-  if (user.role === 'PANEL_MEMBER')      return <Navigate to="/officer/dashboard" replace />;
+  if (user.role === 'COMMITTEE_MEMBER')   return <Navigate to="/committee/dashboard" replace />;
+  if (user.role === 'PANEL_MEMBER')       return <Navigate to="/panel/dashboard" replace />;
   return <Navigate to="/login" replace />;
 }
 
@@ -93,7 +106,7 @@ export default function App() {
 
             {/* ── Officer / Complaints ──────────────────── */}
             <Route path="/officer/dashboard" element={
-              <RequireAuth roles={['COMPLAINTS_OFFICER', 'COMMITTEE_MEMBER', 'PANEL_MEMBER', 'INSTITUTION_ADMIN']}>
+              <RequireAuth roles={['COMPLAINTS_OFFICER', 'INSTITUTION_ADMIN']}>
                 <OfficerDashboard />
               </RequireAuth>
             } />
@@ -103,14 +116,42 @@ export default function App() {
               </RequireAuth>
             } />
             <Route path="/officer/cases/:id" element={
-              <RequireAuth roles={['COMPLAINTS_OFFICER', 'COMMITTEE_MEMBER', 'PANEL_MEMBER', 'INSTITUTION_ADMIN']}>
+              <RequireAuth roles={['COMPLAINTS_OFFICER', 'INSTITUTION_ADMIN']}>
                 <CaseDetail />
               </RequireAuth>
             } />
             <Route path="/officer/cases" element={
-              <RequireAuth roles={['COMPLAINTS_OFFICER', 'COMMITTEE_MEMBER', 'PANEL_MEMBER', 'INSTITUTION_ADMIN']}>
+              <RequireAuth roles={['COMPLAINTS_OFFICER', 'INSTITUTION_ADMIN']}>
                 <MyCases />
               </RequireAuth>
+            } />
+
+            {/* ── Committee ─────────────────────────────── */}
+            <Route path="/committee/dashboard" element={
+              <RequireAuth roles={COMMITTEE_ROLES}><CommitteeDashboard /></RequireAuth>
+            } />
+            <Route path="/committee/cases" element={
+              <RequireAuth roles={COMMITTEE_ROLES}><CaseList /></RequireAuth>
+            } />
+            <Route path="/committee/cases/:id" element={
+              <RequireAuth roles={COMMITTEE_ROLES}><CommitteeCaseDetail /></RequireAuth>
+            } />
+            <Route path="/committee/hearings" element={
+              <RequireAuth roles={COMMITTEE_ROLES}><Hearings /></RequireAuth>
+            } />
+            <Route path="/committee/analytics" element={
+              <RequireAuth roles={COMMITTEE_ROLES}><Analytics /></RequireAuth>
+            } />
+
+            {/* ── Panel ─────────────────────────────────── */}
+            <Route path="/panel/dashboard" element={
+              <RequireAuth roles={PANEL_ROLES_ARR}><PanelDashboard /></RequireAuth>
+            } />
+            <Route path="/panel/cases" element={
+              <RequireAuth roles={PANEL_ROLES_ARR}><PanelCaseList /></RequireAuth>
+            } />
+            <Route path="/panel/cases/:id" element={
+              <RequireAuth roles={PANEL_ROLES_ARR}><PanelCaseDetail /></RequireAuth>
             } />
 
             <Route path="/unauthorized" element={

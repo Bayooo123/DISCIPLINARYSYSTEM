@@ -59,10 +59,10 @@ enum LicenceStatus {
 // ─── USER ─────────────────────────────────────────────────
 
 model User {
-  id               String       @id @default(uuid())
+  id               String        @id @default(uuid())
   institutionId    String?
-  institution      Institution? @relation(fields: [institutionId], references: [id])
-  email            String       @unique
+  institution      Institution?  @relation(fields: [institutionId], references: [id])
+  email            String        @unique
   passwordHash     String
   firstName        String
   lastName         String
@@ -71,14 +71,17 @@ model User {
   department       String?
   jobTitle         String?
   avatarUrl        String?
-  isActive         Boolean      @default(true)
+  isActive         Boolean       @default(true)
+  isChairman       Boolean       @default(false)
   lastLoginAt      DateTime?
   inviteToken      String?
   inviteExpiry     DateTime?
-  inviteAccepted   Boolean      @default(false)
-  createdAt        DateTime     @default(now())
-  updatedAt        DateTime     @updatedAt
-  casesAsFiler     Case[]       @relation("FiledBy")
+  inviteAccepted   Boolean       @default(false)
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+  casesAsFiler     Case[]        @relation("FiledBy")
+  verdictsRecorded Case[]        @relation("VerdictRecordedBy")
+  verdictsRatified Case[]        @relation("VerdictRatifiedBy")
   panelMemberships PanelMember[]
   auditLogs        AuditLog[]
 }
@@ -95,23 +98,23 @@ enum Role {
 // ─── STUDENT ──────────────────────────────────────────────
 
 model Student {
-  id            String   @id @default(uuid())
-  institutionId String
-  matricNumber  String   @unique
-  firstName     String
-  lastName      String
-  email         String   @unique
-  phone         String?
-  faculty       String
-  department    String?
-  level             String
-  yearOfAdmission   Int?
-  gpa               Float?
-  portalUserId      String?
-  portalLastSeenAt  DateTime?
-  isActive          Boolean  @default(true)
-  createdAt         DateTime @default(now())
-  cases             Case[]
+  id              String    @id @default(uuid())
+  institutionId   String
+  matricNumber    String    @unique
+  firstName       String
+  lastName        String
+  email           String    @unique
+  phone           String?
+  faculty         String
+  department      String?
+  level           String
+  yearOfAdmission Int?
+  gpa             Float?
+  portalUserId    String?
+  portalLastSeenAt DateTime?
+  isActive        Boolean   @default(true)
+  createdAt       DateTime  @default(now())
+  cases           Case[]
 }
 
 // ─── OFFENCE TYPE ─────────────────────────────────────────
@@ -161,42 +164,66 @@ model CaseOffence {
 // ─── CASE ─────────────────────────────────────────────────
 
 model Case {
-  id                          String       @id @default(uuid())
-  referenceNumber             String       @unique
+  id                          String          @id @default(uuid())
+  referenceNumber             String          @unique
   institutionId               String
-  institution                 Institution  @relation(fields: [institutionId], references: [id])
+  institution                 Institution     @relation(fields: [institutionId], references: [id])
   studentId                   String
-  student                     Student      @relation(fields: [studentId], references: [id])
+  student                     Student         @relation(fields: [studentId], references: [id])
   filedById                   String
-  filedBy                     User         @relation("FiledBy", fields: [filedById], references: [id])
+  filedBy                     User            @relation("FiledBy", fields: [filedById], references: [id])
   originType                  OriginType
-  description                 String       @db.Text
+  description                 String          @db.Text
   incidentDate                DateTime
   incidentLocation            String?
   witnessName                 String?
   courseCode                  String?
   courseTitle                 String?
-  filedAt                     DateTime     @default(now())
-  status                      CaseStatus   @default(COMPLAINT_FILED)
+  filedAt                     DateTime        @default(now())
+  status                      CaseStatus      @default(COMPLAINT_FILED)
   responseDeadline            DateTime
-  studentResponse             String?      @db.Text
+  studentResponse             String?         @db.Text
   studentResponseAt           DateTime?
   plea                        Plea?
-  panelId                     String?
-  panel                       Panel?       @relation(fields: [panelId], references: [id])
-  hearingDate                 DateTime?
-  hearingVenue                String?
-  verdict                     String?      @db.Text
-  penalty                     String?
-  verdictAt                   DateTime?
-  closedAt                    DateTime?
-  officerNotifiedOnResponse   Boolean      @default(false)
-  officerNotifiedOnVerdict    Boolean      @default(false)
-  studentAccessToken          String?      @unique
+  officerNotifiedOnResponse   Boolean         @default(false)
+  officerNotifiedOnVerdict    Boolean         @default(false)
+  // Student portal
+  studentAccessToken          String?         @unique
   studentAccessExpiry         DateTime?
   studentLastAccessAt         DateTime?
-  studentResponseEdited       Boolean      @default(false)
-  studentResponseLocked       Boolean      @default(false)
+  studentResponseEdited       Boolean         @default(false)
+  studentResponseLocked       Boolean         @default(false)
+  // Hearing
+  hearingDate                 DateTime?
+  hearingTime                 String?
+  hearingVenue                String?
+  penaltyRange                String?
+  internalHearingNotes        String?         @db.Text
+  studentAppeared             Boolean?
+  nonAppearanceFlaggedAt      DateTime?
+  nonAppearanceAlertSentAt    DateTime?
+  // Verdict
+  hearingOutcome              String?         @db.Text
+  verdictFinding              VerdictFinding?
+  verdictPenalty              String?
+  verdictEffectiveDate        DateTime?
+  verdictDeliberationNotes    String?         @db.Text
+  verdictRecordedAt           DateTime?
+  verdictRecordedById         String?
+  verdictRecordedBy           User?           @relation("VerdictRecordedBy", fields: [verdictRecordedById], references: [id])
+  verdictRatifiedAt           DateTime?
+  verdictRatifiedById         String?
+  verdictRatifiedBy           User?           @relation("VerdictRatifiedBy", fields: [verdictRatifiedById], references: [id])
+  // Appeal
+  appealDeadline              DateTime?
+  appealFiled                 Boolean         @default(false)
+  appealFiledAt               DateTime?
+  appealNotes                 String?         @db.Text
+  // Exports
+  caseRecordPdfUrl            String?
+  verdictLetterPdfUrl         String?
+  // Relations
+  panel                       Panel?
   offences                    CaseOffence[]
   evidence                    Evidence[]
   notifications               Notification[]
@@ -228,6 +255,12 @@ enum Plea {
   NOT_GUILTY
 }
 
+enum VerdictFinding {
+  UPHELD
+  DISMISSED
+  PARTIALLY_UPHELD
+}
+
 // ─── EVIDENCE ─────────────────────────────────────────────
 
 model Evidence {
@@ -254,11 +287,19 @@ model Panel {
   id            String        @id @default(uuid())
   institutionId String
   institution   Institution   @relation(fields: [institutionId], references: [id])
+  caseId        String        @unique
+  case          Case          @relation(fields: [caseId], references: [id])
   name          String
-  isActive      Boolean       @default(true)
+  status        PanelStatus   @default(ACTIVE)
+  dissolvedAt   DateTime?
   createdAt     DateTime      @default(now())
   members       PanelMember[]
-  cases         Case[]
+}
+
+enum PanelStatus {
+  ACTIVE
+  CONCLUDED
+  DISSOLVED
 }
 
 model PanelMember {

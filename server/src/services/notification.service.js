@@ -504,6 +504,129 @@ export function verdictNoticeHtml({
   `;
 }
 
+// ── Template 8: Panel Assignment Notification ─────────────────────────────────
+export function panelAssignmentHtml({ member, panelRole, referenceNumber, student, offences, filedAt, platformUrl, caseId }) {
+  const fmt = d => new Date(d).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+  const roleLabel = panelRole === 'CHAIRPERSON' ? 'Chairperson' : panelRole === 'SECRETARY' ? 'Secretary' : 'Member';
+  const offenceList = offences.map(o => `<li style="margin:4px 0;color:#1C1410;">${o.offenceType?.name || o.name}</li>`).join('');
+  return `
+    <div style="font-family:Inter,sans-serif;max-width:600px;margin:0 auto;padding:32px 24px;background:#fff;">
+      <div style="background:#7B1C1C;padding:24px;border-radius:8px 8px 0 0;text-align:center;">
+        <h1 style="color:#C9930A;font-family:Georgia,serif;margin:0;font-size:24px;">Panel Assignment</h1>
+        <p style="color:rgba(255,255,255,0.8);margin:4px 0 0;font-size:13px;">Case ${referenceNumber}</p>
+      </div>
+      <div style="border:1px solid #E0D8CC;border-top:none;padding:32px;border-radius:0 0 8px 8px;">
+        <p style="color:#1C1410;margin:0 0 16px;">Dear ${member.firstName},</p>
+        <p style="color:#1C1410;margin:0 0 24px;">
+          You have been appointed as <strong>${roleLabel}</strong> of the Disciplinary Panel for Case <strong>${referenceNumber}</strong>.
+        </p>
+        <div style="background:#F7F3EE;border-top:3px solid #7B1C1C;padding:16px;border-radius:0 0 6px 6px;margin:0 0 24px;">
+          <p style="margin:0 0 8px;color:#5A4E45;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;">Case Details</p>
+          <table style="width:100%;border-collapse:collapse;">
+            <tr><td style="padding:6px 0;color:#5A4E45;font-size:13px;width:35%;">Reference</td><td style="padding:6px 0;color:#1C1410;font-weight:600;">${referenceNumber}</td></tr>
+            <tr><td style="padding:6px 0;color:#5A4E45;font-size:13px;">Student</td><td style="padding:6px 0;color:#1C1410;">${student.firstName} ${student.lastName} (${student.matricNumber})</td></tr>
+            <tr><td style="padding:6px 0;color:#5A4E45;font-size:13px;">Faculty</td><td style="padding:6px 0;color:#1C1410;">${student.faculty}</td></tr>
+            <tr><td style="padding:6px 0;color:#5A4E45;font-size:13px;">Filed</td><td style="padding:6px 0;color:#1C1410;">${fmt(filedAt)}</td></tr>
+          </table>
+        </div>
+        <p style="color:#1C1410;font-weight:600;margin:0 0 8px;">Offence(s):</p>
+        <ul style="margin:0 0 24px;padding-left:20px;">${offenceList}</ul>
+        <p style="color:#5A4E45;margin:0 0 24px;">
+          You can access the full case file, including the complaint particulars, evidence, and student response, by logging in to the TIDDS platform:
+        </p>
+        <div style="text-align:center;margin:32px 0;">
+          <a href="${platformUrl}/panel/cases/${caseId}" style="background:#7B1C1C;color:#fff;padding:14px 32px;border-radius:6px;text-decoration:none;font-weight:600;font-size:15px;display:inline-block;">
+            View Case File →
+          </a>
+        </div>
+        <p style="color:#8A7F74;font-size:13px;">A hearing date will be communicated to you shortly.</p>
+      </div>
+      <p style="text-align:center;color:#8A7F74;font-size:12px;margin:16px 0 0;">TIDDS — Tertiary Institution Digital Disciplinary System<br/>Powered by Reforma Digital Solutions Ltd</p>
+    </div>
+  `;
+}
+
+// ── Template 9: Ratification Request to Secretary ────────────────────────────
+export function ratificationRequestHtml({ secretary, chairpersonName, referenceNumber, student, verdictFinding, verdictPenalty, verdictEffectiveDate, verdictRecordedAt, platformUrl, caseId }) {
+  const fmt = d => new Date(d).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+  const fmtDt = d => new Date(d).toLocaleString('en-GB', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+  const findingLabel = verdictFinding === 'UPHELD' ? 'UPHELD' : verdictFinding === 'DISMISSED' ? 'DISMISSED' : 'PARTIALLY UPHELD';
+  return `
+    <div style="font-family:Inter,sans-serif;max-width:600px;margin:0 auto;padding:32px 24px;background:#fff;">
+      <div style="background:#7B1C1C;padding:24px;border-radius:8px 8px 0 0;text-align:center;">
+        <h1 style="color:#C9930A;font-family:Georgia,serif;margin:0;font-size:24px;">Verdict Awaiting Ratification</h1>
+        <p style="color:rgba(255,255,255,0.8);margin:4px 0 0;font-size:13px;">Case ${referenceNumber}</p>
+      </div>
+      <div style="border:1px solid #E0D8CC;border-top:none;padding:32px;border-radius:0 0 8px 8px;">
+        <p style="color:#1C1410;margin:0 0 16px;">Dear ${secretary.firstName},</p>
+        <p style="color:#1C1410;margin:0 0 24px;">
+          The Chairperson of the panel for Case <strong>${referenceNumber}</strong> has recorded a verdict. As Panel Secretary, your ratification is required before the verdict is communicated to the student.
+        </p>
+        <div style="background:#F7F3EE;border-top:3px solid #C9930A;padding:16px;border-radius:0 0 6px 6px;margin:0 0 24px;">
+          <p style="margin:0 0 8px;color:#5A4E45;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;">Verdict Summary</p>
+          <table style="width:100%;border-collapse:collapse;">
+            <tr><td style="padding:6px 0;color:#5A4E45;font-size:13px;width:35%;">Case</td><td style="padding:6px 0;color:#1C1410;font-weight:600;">${referenceNumber}</td></tr>
+            <tr><td style="padding:6px 0;color:#5A4E45;font-size:13px;">Student</td><td style="padding:6px 0;color:#1C1410;">${student.firstName} ${student.lastName} (${student.matricNumber})</td></tr>
+            <tr><td style="padding:6px 0;color:#5A4E45;font-size:13px;">Finding</td><td style="padding:6px 0;color:#1C1410;font-weight:700;">${findingLabel}</td></tr>
+            <tr><td style="padding:6px 0;color:#5A4E45;font-size:13px;">Penalty</td><td style="padding:6px 0;color:#1C1410;">${verdictPenalty || '—'}</td></tr>
+            ${verdictEffectiveDate ? `<tr><td style="padding:6px 0;color:#5A4E45;font-size:13px;">Effective</td><td style="padding:6px 0;color:#1C1410;">${fmt(verdictEffectiveDate)}</td></tr>` : ''}
+            <tr><td style="padding:6px 0;color:#5A4E45;font-size:13px;">Recorded By</td><td style="padding:6px 0;color:#1C1410;">${chairpersonName}</td></tr>
+            <tr><td style="padding:6px 0;color:#5A4E45;font-size:13px;">Recorded At</td><td style="padding:6px 0;color:#1C1410;">${fmtDt(verdictRecordedAt)}</td></tr>
+          </table>
+        </div>
+        <div style="background:#FFF3CD;border:1px solid #C9930A;border-radius:6px;padding:12px;margin:0 0 24px;">
+          <p style="margin:0;color:#7B5800;font-size:13px;">The verdict will <strong>NOT</strong> be communicated to the student until you have confirmed your ratification.</p>
+        </div>
+        <div style="text-align:center;margin:32px 0;">
+          <a href="${platformUrl}/panel/cases/${caseId}/ratify" style="background:#7B1C1C;color:#fff;padding:14px 32px;border-radius:6px;text-decoration:none;font-weight:600;font-size:15px;display:inline-block;">
+            Review & Ratify Verdict →
+          </a>
+        </div>
+      </div>
+      <p style="text-align:center;color:#8A7F74;font-size:12px;margin:16px 0 0;">TIDDS — Tertiary Institution Digital Disciplinary System<br/>Powered by Reforma Digital Solutions Ltd</p>
+    </div>
+  `;
+}
+
+// ── Template 10: Non-Appearance Alert to Chairman ────────────────────────────
+export function nonAppearanceAlertHtml({ chairman, referenceNumber, student, hearingDate, hearingTime, hearingVenue, flaggedAt, platformUrl, caseId }) {
+  const fmt = d => new Date(d).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+  const fmtDt = d => new Date(d).toLocaleString('en-GB', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+  return `
+    <div style="font-family:Inter,sans-serif;max-width:600px;margin:0 auto;padding:32px 24px;background:#fff;">
+      <div style="background:#8B1A1A;padding:24px;border-radius:8px 8px 0 0;text-align:center;">
+        <h1 style="color:#FFCC00;font-family:Georgia,serif;margin:0;font-size:24px;">⚠ Student Did Not Appear</h1>
+        <p style="color:rgba(255,255,255,0.8);margin:4px 0 0;font-size:13px;">Case ${referenceNumber}</p>
+      </div>
+      <div style="border:1px solid #E0D8CC;border-top:none;padding:32px;border-radius:0 0 8px 8px;">
+        <p style="color:#1C1410;margin:0 0 16px;">Dear ${chairman.firstName},</p>
+        <p style="color:#1C1410;margin:0 0 24px;">
+          The Panel Chairperson for Case <strong>${referenceNumber}</strong> has recorded that the student did not appear at the scheduled hearing.
+        </p>
+        <div style="background:#FDEAEA;border-top:3px solid #C0392B;padding:16px;border-radius:0 0 6px 6px;margin:0 0 24px;">
+          <p style="margin:0 0 8px;color:#5A4E45;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;">Case Details</p>
+          <table style="width:100%;border-collapse:collapse;">
+            <tr><td style="padding:6px 0;color:#5A4E45;font-size:13px;width:35%;">Reference</td><td style="padding:6px 0;color:#1C1410;font-weight:600;">${referenceNumber}</td></tr>
+            <tr><td style="padding:6px 0;color:#5A4E45;font-size:13px;">Student</td><td style="padding:6px 0;color:#1C1410;">${student.firstName} ${student.lastName} (${student.matricNumber})</td></tr>
+            <tr><td style="padding:6px 0;color:#5A4E45;font-size:13px;">Hearing Date</td><td style="padding:6px 0;color:#1C1410;">${fmt(hearingDate)} at ${hearingTime || '—'}</td></tr>
+            <tr><td style="padding:6px 0;color:#5A4E45;font-size:13px;">Venue</td><td style="padding:6px 0;color:#1C1410;">${hearingVenue || '—'}</td></tr>
+            <tr><td style="padding:6px 0;color:#5A4E45;font-size:13px;">Flagged At</td><td style="padding:6px 0;color:#1C1410;">${fmtDt(flaggedAt)}</td></tr>
+          </table>
+        </div>
+        <div style="background:#F7F3EE;border-left:4px solid #C9930A;padding:12px;border-radius:0 6px 6px 0;margin:0 0 24px;">
+          <p style="margin:0;color:#5A4E45;font-size:13px;">Per University regulations, a student who fails to appear before the Misconduct Panel is subject to suspension. Please log in to the TIDDS platform to review this case and determine how to proceed.</p>
+        </div>
+        <div style="text-align:center;margin:32px 0;">
+          <a href="${platformUrl}/committee/cases/${caseId}" style="background:#7B1C1C;color:#fff;padding:14px 32px;border-radius:6px;text-decoration:none;font-weight:600;font-size:15px;display:inline-block;">
+            Review Case →
+          </a>
+        </div>
+      </div>
+      <p style="text-align:center;color:#8A7F74;font-size:12px;margin:16px 0 0;">TIDDS — Tertiary Institution Digital Disciplinary System<br/>Powered by Reforma Digital Solutions Ltd</p>
+    </div>
+  `;
+}
+
 export function invitationEmailHtml({ firstName, institutionName, role, activateUrl }) {
   return `
     <div style="font-family:Inter,sans-serif;max-width:600px;margin:0 auto;padding:32px 24px;background:#fff;">

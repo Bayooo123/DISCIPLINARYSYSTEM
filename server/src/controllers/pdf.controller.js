@@ -1,0 +1,433 @@
+import pkg from '@prisma/client';
+const { PrismaClient } = pkg;
+import PDFDocument from 'pdfkit';
+import path from 'path';
+import fs from 'fs';
+import { fileURLToPath } from 'url';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const prisma = new PrismaClient();
+
+const MAROON = '#7B1C1C';
+const GOLD   = '#C9930A';
+const MUTED  = '#5A4E45';
+const LIGHT  = '#F7F3EE';
+
+function fmtDate(d) {
+  if (!d) return '—';
+  return new Date(d).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+}
+
+function fmtDateTime(d) {
+  if (!d) return '—';
+  return new Date(d).toLocaleString('en-GB', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+}
+
+function pageFooter(doc, referenceNumber, pageNum, totalPages) {
+  const bottom = doc.page.height - 40;
+  doc.fontSize(8).fillColor(MUTED)
+    .text(`CONFIDENTIAL — University of Lagos Disciplinary System`, 50, bottom, { align: 'left' })
+    .text(`Case: ${referenceNumber} | Generated: ${fmtDate(new Date())} | Page ${pageNum} of ${totalPages}`, 50, bottom, { align: 'right' });
+}
+
+function sectionHeader(doc, title) {
+  doc.moveDown(0.5)
+    .fillColor(MAROON).fontSize(11).font('Helvetica-Bold').text(title.toUpperCase())
+    .moveDown(0.2)
+    .moveTo(50, doc.y).lineTo(doc.page.width - 50, doc.y).strokeColor(MAROON).stroke()
+    .moveDown(0.5);
+}
+
+function labelValue(doc, label, value, y) {
+  const startY = y !== undefined ? y : doc.y;
+  doc.fillColor(MUTED).fontSize(9).font('Helvetica').text(label, 50, startY, { width: 130 });
+  doc.fillColor('#1C1410').fontSize(9).text(value || '—', 190, startY, { width: 360 });
+  doc.moveDown(0.3);
+}
+
+export async function generatePDFs(caseId, institutionId) {
+  const c = await prisma.case.findUnique({
+    where: { id: caseId },
+    include: {
+      student: true,
+      filedBy: { select: { firstName: true, lastName: true, department: true, jobTitle: true } },
+      offences: { include: { offenceType: true } },
+      evidence: true,
+      auditLogs: { orderBy: { timestamp: 'asc' }, include: { actor: { select: { firstName: true, lastName: true, role: true } } } },
+      panel: { include: { members: { include: { user: { select: { firstName: true, lastName: true, jobTitle: true } } } } } },
+      verdictRecordedBy: { select: { firstName: true, lastName: true } },
+      verdictRatifiedBy: { select: { firstName: true, lastName: true } },
+      institution: true,
+    },
+  });
+  if (!c) return;
+
+  const uploadsDir = path.resolve(__dirname, '../../../uploads/pdfs');
+  fs.mkdirSync(uploadsDir, { recursive: true });
+
+  const caseRecordPath   = path.join(uploadsDir, `${caseId}-case-record.pdf`);
+  const verdictLetterPath = path.join(uploadsDir, `${caseId}-verdict-letter.pdf`);
+
+  await Promise.all([
+    generateCaseRecordPdf(c, caseRecordPath),
+    generateVerdictLetterPdf(c, verdictLetterPath),
+  ]);
+
+  const baseUrl = process.env.SERVER_URL || 'http://localhost:5000';
+  await prisma.case.update({
+    where: { id: caseId },
+    data: {
+      caseRecordPdfUrl:    `${baseUrl}/uploads/pdfs/${caseId}-case-record.pdf`,
+      verdictLetterPdfUrl: `${baseUrl}/uploads/pdfs/${caseId}-verdict-letter.pdf`,
+    },
+  });
+
+  await prisma.auditLog.create({
+    data: {
+      caseId,
+      action: 'PDF_GENERATED',
+      description: `Case record and verdict letter PDFs generated for ${c.referenceNumber}.`,
+      metadata: { pdfType: 'BOTH' },
+    },
+  });
+}
+
+async function generateCaseRecordPdf(c, outputPath) {
+  return new Promise((resolve, reject) => {
+    const doc = new PDFDocument({ size: 'A4', margins: { top: 50, bottom: 60, left: 50, right: 50 } });
+    const stream = fs.createWriteStream(outputPath);
+    doc.pipe(stream);
+
+    const ref = c.referenceNumber;
+    const institution = c.institution;
+    const student = c.student;
+    const chairperson = c.panel?.members.find(m => m.panelRole === 'CHAIRPERSON')?.user;
+    const secretary   = c.panel?.members.find(m => m.panelRole === 'SECRETARY')?.user;
+
+    // ── Page 1: Cover ──────────────────────────────────────────────────────────
+    doc.fillColor(MAROON).rect(0, 0, doc.page.width, 120).fill();
+    doc.fillColor('#fff').fontSize(22).font('Helvetica-Bold')
+      .text('DISCIPLINARY CASE RECORD', 50, 35, { align: 'center' });
+    doc.fillColor(GOLD).fontSize(14).font('Helvetica')
+      .text(institution?.name?.toUpperCase() || 'UNIVERSITY', 50, 65, { align: 'center' });
+
+    doc.moveDown(4);
+    doc.fillColor(MAROON).fontSize(12).font('Helvetica-Bold').text('CASE SUMMARY', { align: 'center' });
+    doc.moveDown(1);
+
+    const coverRows = [
+      ['Case Reference', ref],
+      ['Date Filed', fmtDate(c.filedAt)],
+      ['Date Closed', c.closedAt ? fmtDate(c.closedAt) : 'Open'],
+      ['Classification', 'CONFIDENTIAL'],
+    ];
+    for (const [label, value] of coverRows) {
+      labelValue(doc, label, value);
+    }
+
+    doc.moveDown(1);
+    doc.fillColor(MUTED).fontSize(9).text('Generated by TIDDS — Tertiary Institution Digital Disciplinary System', { align: 'center' });
+    doc.fillColor(MUTED).fontSize(9).text('Powered by Reforma Digital Solutions Ltd', { align: 'center' });
+
+    // ── Page 2: Student & Complaint ───────────────────────────────────────────
+    doc.addPage();
+    sectionHeader(doc, 'Student Particulars');
+    labelValue(doc, 'Name', `${student.firstName} ${student.lastName}`);
+    labelValue(doc, 'Matriculation No.', student.matricNumber);
+    labelValue(doc, 'Faculty', student.faculty);
+    labelValue(doc, 'Department', student.department);
+    labelValue(doc, 'Level', student.level);
+
+    doc.moveDown(0.5);
+    sectionHeader(doc, 'Complaint Details');
+    labelValue(doc, 'Filed By', `${c.filedBy.firstName} ${c.filedBy.lastName} — ${c.filedBy.department || ''}`);
+    labelValue(doc, 'Origin', c.originType);
+    labelValue(doc, 'Date of Incident', fmtDate(c.incidentDate));
+    labelValue(doc, 'Location', c.incidentLocation);
+    if (c.courseCode) labelValue(doc, 'Course', `${c.courseCode}${c.courseTitle ? ` — ${c.courseTitle}` : ''}`);
+    if (c.witnessName) labelValue(doc, 'Witness / Invigilator', c.witnessName);
+
+    doc.moveDown(0.5);
+    sectionHeader(doc, 'Offences Alleged');
+    c.offences.forEach((o, i) => {
+      doc.fillColor('#1C1410').fontSize(9).text(`${i + 1}. ${o.offenceType?.name || '—'}`);
+    });
+
+    doc.moveDown(0.5);
+    sectionHeader(doc, 'Particulars of Complaint');
+    doc.fillColor('#1C1410').fontSize(9).font('Helvetica').text(c.description || '—', { lineGap: 3 });
+
+    // ── Page 3: Evidence ──────────────────────────────────────────────────────
+    doc.addPage();
+    const complainantEvidence = c.evidence.filter(e => e.submittedBy === 'COMPLAINANT');
+    const studentEvidence     = c.evidence.filter(e => e.submittedBy === 'STUDENT');
+
+    sectionHeader(doc, 'Evidence Submitted by Complainant');
+    if (complainantEvidence.length === 0) {
+      doc.fillColor(MUTED).fontSize(9).text('No evidence submitted by complainant.');
+    } else {
+      complainantEvidence.forEach((e, i) => {
+        doc.fillColor('#1C1410').fontSize(9)
+          .text(`${i + 1}. ${e.fileName} (${(e.fileSize / 1024).toFixed(0)} KB — uploaded ${fmtDate(e.uploadedAt)})`);
+      });
+    }
+
+    doc.moveDown(0.5);
+    sectionHeader(doc, 'Evidence Submitted by Student');
+    if (studentEvidence.length === 0) {
+      doc.fillColor(MUTED).fontSize(9).text('No evidence submitted by student.');
+    } else {
+      studentEvidence.forEach((e, i) => {
+        doc.fillColor('#1C1410').fontSize(9)
+          .text(`${i + 1}. ${e.fileName} (${(e.fileSize / 1024).toFixed(0)} KB — submitted ${fmtDate(e.uploadedAt)})`);
+      });
+    }
+
+    // ── Page 4: Student Response ──────────────────────────────────────────────
+    doc.addPage();
+    sectionHeader(doc, 'Student Response');
+    if (c.studentResponseAt) {
+      labelValue(doc, 'Submitted', fmtDateTime(c.studentResponseAt));
+      labelValue(doc, 'Plea', c.plea === 'GUILTY' ? 'Guilty' : c.plea === 'NOT_GUILTY' ? 'Not Guilty' : '—');
+      if (c.studentResponseEdited) {
+        doc.fillColor(MUTED).fontSize(8).text('Note: Response was updated once by the student.');
+        doc.moveDown(0.3);
+      }
+      doc.moveDown(0.3);
+      sectionHeader(doc, 'Written Statement');
+      doc.fillColor('#1C1410').fontSize(9).text(c.studentResponse || '—', { lineGap: 3 });
+    } else {
+      doc.fillColor(MUTED).fontSize(9).text('Student did not submit a response before the deadline.');
+    }
+
+    // ── Page 5: Panel & Hearing ───────────────────────────────────────────────
+    doc.addPage();
+    sectionHeader(doc, 'Panel Composition');
+    if (c.panel) {
+      c.panel.members.forEach(m => {
+        const roleLabel = m.panelRole === 'CHAIRPERSON' ? 'Chairperson' : m.panelRole === 'SECRETARY' ? 'Secretary' : 'Member';
+        doc.fillColor('#1C1410').fontSize(9).text(`${roleLabel}: ${m.user.firstName} ${m.user.lastName}${m.user.jobTitle ? ` — ${m.user.jobTitle}` : ''}`);
+      });
+    } else {
+      doc.fillColor(MUTED).fontSize(9).text('No panel constituted.');
+    }
+
+    doc.moveDown(0.5);
+    sectionHeader(doc, 'Hearing Record');
+    labelValue(doc, 'Date', fmtDate(c.hearingDate));
+    labelValue(doc, 'Time', c.hearingTime || '—');
+    labelValue(doc, 'Venue', c.hearingVenue || '—');
+    labelValue(doc, 'Student Appeared', c.studentAppeared === true ? 'Yes' : c.studentAppeared === false ? 'No' : 'Not recorded');
+
+    if (c.hearingOutcome) {
+      doc.moveDown(0.3);
+      sectionHeader(doc, 'Hearing Outcome');
+      doc.fillColor('#1C1410').fontSize(9).text(c.hearingOutcome, { lineGap: 3 });
+    }
+
+    // ── Page 6: Verdict ───────────────────────────────────────────────────────
+    doc.addPage();
+    sectionHeader(doc, 'Verdict');
+    const findingLabel = c.verdictFinding === 'UPHELD' ? 'UPHELD' : c.verdictFinding === 'DISMISSED' ? 'DISMISSED' : c.verdictFinding === 'PARTIALLY_UPHELD' ? 'PARTIALLY UPHELD' : '—';
+    labelValue(doc, 'Finding', findingLabel);
+    labelValue(doc, 'Penalty', c.verdictPenalty);
+    labelValue(doc, 'Effective Date', fmtDate(c.verdictEffectiveDate));
+    doc.moveDown(0.3);
+    if (c.verdictRecordedBy) labelValue(doc, 'Verdict Recorded By', `${c.verdictRecordedBy.firstName} ${c.verdictRecordedBy.lastName} (Chairperson)`);
+    labelValue(doc, 'Recorded At', fmtDate(c.verdictRecordedAt));
+    if (c.verdictRatifiedBy) labelValue(doc, 'Verdict Ratified By', `${c.verdictRatifiedBy.firstName} ${c.verdictRatifiedBy.lastName} (Secretary)`);
+    labelValue(doc, 'Ratified At', fmtDate(c.verdictRatifiedAt));
+
+    doc.moveDown(0.5);
+    sectionHeader(doc, 'Appeal');
+    labelValue(doc, 'Appeal Deadline', fmtDate(c.appealDeadline));
+    labelValue(doc, 'Appeal Filed', c.appealFiled ? `Yes — ${fmtDate(c.appealFiledAt)}` : 'No');
+    if (c.appealNotes) doc.fillColor('#1C1410').fontSize(9).text(c.appealNotes, { lineGap: 3 });
+
+    // ── Page 7: Audit Trail ───────────────────────────────────────────────────
+    doc.addPage();
+    sectionHeader(doc, 'Case Audit Trail');
+
+    const colW = [100, 120, 90, 240];
+    const headers = ['Timestamp', 'Actor', 'Action', 'Description'];
+    let x = 50;
+    let y = doc.y;
+    doc.fillColor(MAROON).fontSize(8).font('Helvetica-Bold');
+    headers.forEach((h, i) => { doc.text(h, x, y, { width: colW[i] }); x += colW[i]; });
+    doc.moveDown(0.5);
+    doc.moveTo(50, doc.y).lineTo(doc.page.width - 50, doc.y).strokeColor(GOLD).stroke();
+    doc.moveDown(0.3);
+
+    for (const log of c.auditLogs) {
+      x = 50; y = doc.y;
+      if (y > doc.page.height - 80) { doc.addPage(); y = doc.y = 50; }
+      const actorName = log.actor ? `${log.actor.firstName} ${log.actor.lastName}` : 'System';
+      const cols = [fmtDate(log.timestamp), actorName, log.action.replace(/_/g, ' '), log.description];
+      const rowH = Math.max(...cols.map((t, i) => doc.heightOfString(t, { width: colW[i] - 4 })));
+      doc.fillColor('#1C1410').fontSize(7).font('Helvetica');
+      cols.forEach((t, i) => { doc.text(t, x + 2, y, { width: colW[i] - 4 }); x += colW[i]; });
+      doc.y = y + rowH + 6;
+      doc.moveTo(50, doc.y - 3).lineTo(doc.page.width - 50, doc.y - 3).strokeColor('#E0D8CC').lineWidth(0.5).stroke();
+    }
+
+    doc.end();
+    stream.on('finish', resolve);
+    stream.on('error', reject);
+  });
+}
+
+async function generateVerdictLetterPdf(c, outputPath) {
+  return new Promise((resolve, reject) => {
+    const doc = new PDFDocument({ size: 'A4', margins: { top: 60, bottom: 60, left: 70, right: 70 } });
+    const stream = fs.createWriteStream(outputPath);
+    doc.pipe(stream);
+
+    const student = c.student;
+    const institution = c.institution;
+    const chairperson = c.panel?.members.find(m => m.panelRole === 'CHAIRPERSON')?.user;
+    const secretary   = c.panel?.members.find(m => m.panelRole === 'SECRETARY')?.user;
+    const offenceList = c.offences.map((o, i) => `${i + 1}. ${o.offenceType?.name || '—'}`).join('\n');
+
+    doc.fillColor(MAROON).rect(0, 0, doc.page.width, 10).fill();
+
+    doc.fillColor(MAROON).fontSize(14).font('Helvetica-Bold').text(institution?.name?.toUpperCase() || 'UNIVERSITY', { align: 'center' });
+    doc.fillColor(MUTED).fontSize(10).font('Helvetica').text('OFFICE OF THE DISCIPLINARY COMMITTEE', { align: 'center' });
+    doc.moveDown(1.5);
+
+    doc.fillColor(MUTED).fontSize(10).text(fmtDate(c.verdictRatifiedAt || new Date()), { align: 'right' });
+    doc.moveDown(1);
+
+    doc.fillColor(MAROON).fontSize(14).font('Helvetica-Bold').text('VERDICT LETTER', { align: 'center' });
+    doc.moveDown(0.3);
+    doc.fillColor(MUTED).fontSize(10).font('Helvetica').text(`Case Reference: ${c.referenceNumber}`, { align: 'center' });
+    doc.moveDown(1.5);
+
+    doc.fillColor('#1C1410').fontSize(10).font('Helvetica')
+      .text(`Dear ${student.firstName} ${student.lastName} (${student.matricNumber}),`);
+    doc.moveDown(1);
+
+    const hearingDateStr = fmtDate(c.hearingDate);
+    doc.text(
+      `Following the hearing conducted before the ${institution?.shortName || institution?.name || 'University'} Disciplinary Panel on ${hearingDateStr}, the Panel has reached the following verdict in respect of the disciplinary complaint filed against you:`,
+      { lineGap: 4 }
+    );
+    doc.moveDown(1);
+
+    const findingLabel = c.verdictFinding === 'UPHELD' ? 'UPHELD' : c.verdictFinding === 'DISMISSED' ? 'DISMISSED' : 'PARTIALLY UPHELD';
+    doc.fillColor(MAROON).fontSize(11).font('Helvetica-Bold').text(`FINDING:          ${findingLabel}`);
+    doc.moveDown(0.5);
+    doc.fillColor('#1C1410').fontSize(10).font('Helvetica-Bold').text('OFFENCES:');
+    doc.font('Helvetica').text(offenceList, { lineGap: 3 });
+    doc.moveDown(0.5);
+    if (c.verdictPenalty) {
+      doc.font('Helvetica-Bold').text(`PENALTY:          ${c.verdictPenalty}`);
+    }
+    if (c.verdictEffectiveDate) {
+      doc.font('Helvetica-Bold').text(`EFFECTIVE DATE:   ${fmtDate(c.verdictEffectiveDate)}`);
+    }
+    doc.moveDown(1.5);
+
+    if (c.verdictFinding === 'UPHELD' || c.verdictFinding === 'PARTIALLY_UPHELD') {
+      doc.fillColor(MAROON).fontSize(11).font('Helvetica-Bold').text('RIGHT OF APPEAL');
+      doc.fillColor('#1C1410').fontSize(10).font('Helvetica').moveDown(0.3)
+        .text(
+          'You have the right to appeal this decision. A written notice of appeal must be submitted to the Office of the Registrar within ten (10) working days of the date of this letter, stating the grounds of appeal and attaching any new evidence not previously presented to the Panel.',
+          { lineGap: 4 }
+        );
+      doc.moveDown(0.3);
+      doc.text(`Appeal Deadline: ${fmtDate(c.appealDeadline)}`);
+      doc.moveDown(1.5);
+    }
+
+    doc.fontSize(10).text('This letter constitutes the University\'s official notification of the Panel\'s decision.', { lineGap: 4 });
+    doc.moveDown(2);
+
+    // Signatures
+    if (chairperson) {
+      doc.moveTo(70, doc.y).lineTo(270, doc.y).strokeColor('#1C1410').lineWidth(0.5).stroke();
+      doc.moveDown(0.3);
+      doc.fillColor('#1C1410').fontSize(10).text(`${chairperson.firstName} ${chairperson.lastName}`);
+      doc.text('Chairperson, Disciplinary Panel');
+      doc.text(institution?.shortName || institution?.name || 'University');
+    }
+    doc.moveDown(1.5);
+    if (secretary) {
+      doc.moveTo(70, doc.y).lineTo(270, doc.y).strokeColor('#1C1410').lineWidth(0.5).stroke();
+      doc.moveDown(0.3);
+      doc.fillColor('#1C1410').fontSize(10).text(`${secretary.firstName} ${secretary.lastName}`);
+      doc.text('Secretary, Disciplinary Panel');
+      doc.text(institution?.shortName || institution?.name || 'University');
+    }
+
+    // Footer
+    doc.fillColor(MAROON).rect(0, doc.page.height - 30, doc.page.width, 30).fill();
+    doc.fillColor('#fff').fontSize(8)
+      .text(`CONFIDENTIAL — ${institution?.name || 'University'} Disciplinary System — ${c.referenceNumber}`, 0, doc.page.height - 20, { align: 'center' });
+
+    doc.end();
+    stream.on('finish', resolve);
+    stream.on('error', reject);
+  });
+}
+
+// ── HTTP handlers ─────────────────────────────────────────────────────────────
+
+export async function exportCaseRecord(req, res) {
+  try {
+    const { institutionId, userId } = req.user;
+    const { id: caseId } = req.params;
+
+    const c = await prisma.case.findUnique({ where: { id: caseId } });
+    if (!c || c.institutionId !== institutionId) return res.status(404).json({ error: 'Case not found' });
+
+    if (c.caseRecordPdfUrl) return res.json({ pdfUrl: c.caseRecordPdfUrl });
+
+    // Generate on-demand
+    await generatePDFs(caseId, institutionId);
+    const updated = await prisma.case.findUnique({ where: { id: caseId } });
+
+    await prisma.auditLog.create({
+      data: {
+        caseId, actorId: userId,
+        action: 'PDF_GENERATED',
+        description: `Case record PDF generated for ${c.referenceNumber} on demand.`,
+        metadata: { pdfType: 'CASE_RECORD' },
+      },
+    });
+
+    res.json({ pdfUrl: updated.caseRecordPdfUrl });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to generate case record PDF' });
+  }
+}
+
+export async function exportVerdictLetter(req, res) {
+  try {
+    const { institutionId, userId } = req.user;
+    const { id: caseId } = req.params;
+
+    const c = await prisma.case.findUnique({ where: { id: caseId } });
+    if (!c || c.institutionId !== institutionId) return res.status(404).json({ error: 'Case not found' });
+    if (c.status !== 'CLOSED') return res.status(409).json({ error: 'Verdict letter is only available for closed cases' });
+
+    if (c.verdictLetterPdfUrl) return res.json({ pdfUrl: c.verdictLetterPdfUrl });
+
+    await generatePDFs(caseId, institutionId);
+    const updated = await prisma.case.findUnique({ where: { id: caseId } });
+
+    await prisma.auditLog.create({
+      data: {
+        caseId, actorId: userId,
+        action: 'PDF_GENERATED',
+        description: `Verdict letter PDF generated for ${c.referenceNumber} on demand.`,
+        metadata: { pdfType: 'VERDICT_LETTER' },
+      },
+    });
+
+    res.json({ pdfUrl: updated.verdictLetterPdfUrl });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to generate verdict letter PDF' });
+  }
+}
