@@ -118,8 +118,6 @@ async function main() {
   }
 
   // ── 5. Offence Types (44 offences, UNILAG list) ────────────
-  await prisma.offenceType.deleteMany({ where: { institutionId: unilag.id } });
-
   const offenceTypes = [
     // EXAMINATION (12)
     { name: 'Examination Malpractice — Copying',            category: 'EXAMINATION', penaltyTier: 'RUSTICATION_1',  defaultPenalty: '1-semester rustication',  description: 'Copying from another student or unauthorized material during an examination.' },
@@ -178,7 +176,8 @@ async function main() {
 
   const createdOffences = {};
   for (const ot of offenceTypes) {
-    const created = await prisma.offenceType.create({ data: { institutionId: unilag.id, ...ot } });
+    const existing = await prisma.offenceType.findFirst({ where: { institutionId: unilag.id, name: ot.name } });
+    const created = existing ?? await prisma.offenceType.create({ data: { institutionId: unilag.id, ...ot } });
     createdOffences[ot.name] = created;
     console.log(`Offence type: ${ot.name}`);
   }
@@ -301,7 +300,7 @@ async function main() {
   const chairmanHash = await bcrypt.hash('Chairman2025!', 12);
   const chairman = await prisma.user.upsert({
     where:  { email: 'chairman@unilag.edu.ng' },
-    update: { isActive: true, inviteAccepted: true },
+    update: {},
     create: {
       institutionId:  unilag.id,
       email:          'chairman@unilag.edu.ng',
@@ -321,7 +320,7 @@ async function main() {
   const panelHash = await bcrypt.hash('Panel2025!', 12);
   const maryam = await prisma.user.upsert({
     where:  { email: 'maryam.aliyu@unilag.edu.ng' },
-    update: { isActive: true, inviteAccepted: true },
+    update: {},
     create: {
       institutionId:  unilag.id,
       email:          'maryam.aliyu@unilag.edu.ng',
@@ -422,7 +421,7 @@ async function main() {
         institutionId:        unilag.id,
         studentId:            s4.id,
         filedById:            genOfficer.id,
-        originType:           'STUDENT',
+        originType:           'GENERAL',
         description:          'Student created and administered an anonymous social-media account used to post defamatory and threatening messages targeting three fellow students and a lecturer. Screenshots were provided by the complainants. Digital forensics confirmed the account was operated from the student\'s device IP.',
         incidentDate:         new Date('2026-02-01'),
         incidentLocation:     'Online (Instagram / WhatsApp)',
@@ -487,7 +486,7 @@ async function main() {
         institutionId:          unilag.id,
         studentId:              s5.id,
         filedById:              lawOfficer.id,
-        originType:             'EXAMINATION',
+        originType:             'FACULTY',
         description:            'Student paid another individual to sit his MBBS Year 4 Clinical Pharmacology examination. The impersonator was apprehended at the examination hall. Biometric checks confirmed mismatch with enrolled student record.',
         incidentDate:           new Date('2025-11-28'),
         incidentLocation:       'College of Medicine Examination Hall',
@@ -497,7 +496,6 @@ async function main() {
         filedAt:                new Date('2025-11-30T08:00:00Z'),
         responseDeadline:       new Date('2025-12-07T23:59:00Z'),
         status:                 'CLOSED',
-        closedAt,
         hearingDate:            new Date('2026-02-10T00:00:00Z'),
         hearingTime:            '09:00 AM',
         hearingVenue:           'Dean of Medicine Office',
