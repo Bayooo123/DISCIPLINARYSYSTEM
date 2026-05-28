@@ -304,6 +304,206 @@ export function officerVerdictAlertHtml({
   `;
 }
 
+export function studentAcknowledgementHtml({
+  student,
+  referenceNumber,
+  plea,
+  submittedAt,
+  responseDeadline,
+  isEdit,
+  isLocked,
+  portalUrl,
+}) {
+  const fmt = d => new Date(d).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+  const fmtDt = d => new Date(d).toLocaleString('en-GB', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+  const pleaLabel = plea === 'GUILTY' ? 'Guilty' : 'Not Guilty';
+
+  const editNote = isLocked
+    ? `<p style="color:#5A4E45;margin:0 0 16px;">Your response is now <strong>final and cannot be changed</strong>.</p>`
+    : !isEdit
+    ? `<p style="color:#5A4E45;margin:0 0 16px;">Please note: you may update your response <strong>once</strong> before the deadline of <strong>${fmt(responseDeadline)}</strong>. After one update, your response will be permanently locked.</p>`
+    : '';
+
+  return `
+    <div style="font-family:Inter,sans-serif;max-width:600px;margin:0 auto;padding:32px 24px;background:#fff;">
+      <div style="background:#7B1C1C;padding:24px;border-radius:8px 8px 0 0;text-align:center;">
+        <h1 style="color:#C9930A;font-family:Georgia,serif;margin:0;font-size:24px;">Response Received</h1>
+        <p style="color:rgba(255,255,255,0.8);margin:4px 0 0;font-size:13px;">Reference: ${referenceNumber}</p>
+      </div>
+      <div style="border:1px solid #E0D8CC;border-top:none;padding:32px;border-radius:0 0 8px 8px;">
+        <p style="color:#1C1410;margin:0 0 16px;">Dear ${student.firstName},</p>
+        <p style="color:#1C1410;margin:0 0 24px;">
+          We have received your ${isEdit ? 'updated ' : ''}written response to Case <strong>${referenceNumber}</strong>.
+        </p>
+
+        <div style="background:#E8F5EE;border:1px solid #A8D5B8;border-radius:8px;padding:16px;margin:0 0 24px;">
+          <p style="margin:0 0 8px;color:#1A6B42;font-weight:600;font-size:15px;">Submission Confirmed</p>
+          <table style="width:100%;border-collapse:collapse;">
+            <tr><td style="padding:4px 0;color:#4A3F35;font-size:13px;width:40%;">Case Reference</td><td style="padding:4px 0;color:#1C1410;font-weight:600;font-size:13px;">${referenceNumber}</td></tr>
+            <tr><td style="padding:4px 0;color:#4A3F35;font-size:13px;">Plea</td><td style="padding:4px 0;color:#1C1410;font-size:13px;">${pleaLabel}</td></tr>
+            <tr><td style="padding:4px 0;color:#4A3F35;font-size:13px;">Submitted</td><td style="padding:4px 0;color:#1C1410;font-size:13px;">${fmtDt(submittedAt)}</td></tr>
+          </table>
+        </div>
+
+        ${editNote}
+
+        <p style="color:#1C1410;font-weight:600;margin:0 0 8px;">What happens next</p>
+        <p style="color:#5A4E45;margin:0 0 24px;">
+          The Disciplinary Committee will review your submission and constitute a panel to hear your case.
+          You will receive a formal hearing notice by email once a date has been set.
+        </p>
+
+        <div style="text-align:center;margin:32px 0;">
+          <a href="${portalUrl}" style="background:#7B1C1C;color:#fff;padding:14px 32px;border-radius:6px;text-decoration:none;font-weight:600;font-size:15px;display:inline-block;">
+            View My Case →
+          </a>
+        </div>
+
+        <p style="color:#8A7F74;font-size:13px;margin:0;">
+          Please retain this email as confirmation of your submission.
+        </p>
+      </div>
+      <p style="text-align:center;color:#8A7F74;font-size:12px;margin:16px 0 0;">
+        TIDDS — Tertiary Institution Digital Disciplinary System<br/>
+        Powered by Reforma Digital Solutions Ltd
+      </p>
+    </div>
+  `;
+}
+
+export function hearingNoticeHtml({
+  student,
+  referenceNumber,
+  hearingDate,
+  hearingVenue,
+  panelName,
+  offences,
+  penaltyRange,
+  portalUrl,
+}) {
+  const fmtDay = d => new Date(d).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+  const fmtTime = d => new Date(d).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+  const offenceList = offences.map((o, i) => `<li style="margin:4px 0;color:#1C1410;">${i + 1}. ${o.offenceType?.name || o.name}</li>`).join('');
+
+  return `
+    <div style="font-family:Inter,sans-serif;max-width:600px;margin:0 auto;padding:32px 24px;background:#fff;">
+      <div style="background:#7B1C1C;padding:24px;border-radius:8px 8px 0 0;text-align:center;">
+        <h1 style="color:#C9930A;font-family:Georgia,serif;margin:0;font-size:24px;">Hearing Notice</h1>
+        <p style="color:rgba(255,255,255,0.8);margin:4px 0 0;font-size:13px;">You Are Required to Appear — ${referenceNumber}</p>
+      </div>
+      <div style="border:1px solid #E0D8CC;border-top:none;padding:32px;border-radius:0 0 8px 8px;">
+        <p style="color:#1C1410;margin:0 0 16px;">Dear ${student.firstName} ${student.lastName},</p>
+        <p style="color:#1C1410;margin:0 0 24px;">
+          You are hereby summoned to appear before the Disciplinary Panel in connection with Case
+          <strong>${referenceNumber}</strong>.
+        </p>
+
+        <table style="width:100%;border-collapse:collapse;margin:0 0 24px;">
+          <tr><td style="padding:8px;background:#F7F3EE;color:#5A4E45;font-size:13px;width:40%;">Date</td><td style="padding:8px;color:#1C1410;font-weight:600;">${fmtDay(hearingDate)}</td></tr>
+          <tr><td style="padding:8px;color:#5A4E45;font-size:13px;">Time</td><td style="padding:8px;color:#1C1410;font-weight:600;">${fmtTime(hearingDate)}</td></tr>
+          <tr><td style="padding:8px;background:#F7F3EE;color:#5A4E45;font-size:13px;">Venue</td><td style="padding:8px;background:#F7F3EE;color:#1C1410;">${hearingVenue}</td></tr>
+          ${panelName ? `<tr><td style="padding:8px;color:#5A4E45;font-size:13px;">Panel</td><td style="padding:8px;color:#1C1410;">${panelName}</td></tr>` : ''}
+        </table>
+
+        <p style="color:#1C1410;font-weight:600;margin:0 0 8px;">Charges Against You:</p>
+        <ol style="margin:0 0 24px;padding-left:20px;">${offenceList}</ol>
+
+        ${penaltyRange ? `<p style="color:#1C1410;margin:0 0 24px;"><strong>Possible Penalty:</strong> ${penaltyRange}</p>` : ''}
+
+        <div style="background:#F7F3EE;border-left:4px solid #7B1C1C;padding:16px;border-radius:0 6px 6px 0;margin:0 0 24px;">
+          <p style="margin:0 0 8px;color:#1C1410;font-weight:600;">Rules Governing Your Appearance</p>
+          <ol style="margin:0;padding-left:18px;color:#5A4E45;font-size:13px;line-height:1.8;">
+            <li>Arrive punctually. Failure to appear may result in the panel proceeding in your absence.</li>
+            <li>You may bring physical evidence that corresponds to materials already submitted digitally.</li>
+            <li>You will be given a full and fair opportunity to address the panel and present your case.</li>
+            <li>Legal counsel is not permitted unless expressly authorised in writing by the Committee.</li>
+            <li>Conduct yourself with decorum throughout the proceedings.</li>
+            <li>The verdict will be communicated within two (2) working days of the hearing.</li>
+          </ol>
+        </div>
+
+        <div style="text-align:center;margin:32px 0;">
+          <a href="${portalUrl}" style="background:#7B1C1C;color:#fff;padding:14px 32px;border-radius:6px;text-decoration:none;font-weight:600;font-size:15px;display:inline-block;">
+            View Full Hearing Notice →
+          </a>
+        </div>
+      </div>
+      <p style="text-align:center;color:#8A7F74;font-size:12px;margin:16px 0 0;">
+        TIDDS — Tertiary Institution Digital Disciplinary System<br/>
+        Powered by Reforma Digital Solutions Ltd
+      </p>
+    </div>
+  `;
+}
+
+export function verdictNoticeHtml({
+  student,
+  referenceNumber,
+  finding,
+  penalty,
+  effectiveDate,
+  verdictAt,
+  portalUrl,
+  contactEmail,
+}) {
+  const fmt = d => new Date(d).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+  const upheld = finding === 'UPHELD';
+
+  return `
+    <div style="font-family:Inter,sans-serif;max-width:600px;margin:0 auto;padding:32px 24px;background:#fff;">
+      <div style="background:#7B1C1C;padding:24px;border-radius:8px 8px 0 0;text-align:center;">
+        <h1 style="color:#C9930A;font-family:Georgia,serif;margin:0;font-size:24px;">Disciplinary Panel Verdict</h1>
+        <p style="color:rgba(255,255,255,0.8);margin:4px 0 0;font-size:13px;">Reference: ${referenceNumber}</p>
+      </div>
+      <div style="border:1px solid #E0D8CC;border-top:none;padding:32px;border-radius:0 0 8px 8px;">
+        <p style="color:#1C1410;margin:0 0 16px;">Dear ${student.firstName} ${student.lastName},</p>
+        <p style="color:#1C1410;margin:0 0 24px;">
+          The Disciplinary Panel has reached a verdict in Case <strong>${referenceNumber}</strong>.
+        </p>
+
+        <div style="background:${upheld ? '#FDEAEA' : '#E8F5EE'};border:1px solid ${upheld ? '#D9A5A5' : '#A8D5B8'};border-radius:8px;padding:20px;margin:0 0 24px;">
+          <table style="width:100%;border-collapse:collapse;">
+            <tr><td style="padding:6px 0;color:#5A4E45;font-size:13px;width:40%;">Finding</td><td style="padding:6px 0;color:#1C1410;font-weight:700;font-size:15px;">${upheld ? 'The allegation has been upheld.' : 'The allegation has been dismissed.'}</td></tr>
+            <tr><td style="padding:6px 0;color:#5A4E45;font-size:13px;">Penalty</td><td style="padding:6px 0;color:${upheld ? '#8B1A1A' : '#1A6B42'};font-weight:600;">${penalty || 'No penalty imposed'}</td></tr>
+            ${effectiveDate ? `<tr><td style="padding:6px 0;color:#5A4E45;font-size:13px;">Effective Date</td><td style="padding:6px 0;color:#1C1410;">${fmt(effectiveDate)}</td></tr>` : ''}
+            <tr><td style="padding:6px 0;color:#5A4E45;font-size:13px;">Verdict Date</td><td style="padding:6px 0;color:#1C1410;">${fmt(verdictAt)}</td></tr>
+          </table>
+        </div>
+
+        ${upheld ? `
+        <div style="background:#F7F3EE;border-left:4px solid #C9930A;padding:16px;border-radius:0 6px 6px 0;margin:0 0 24px;">
+          <p style="margin:0 0 8px;color:#1C1410;font-weight:600;">Your Right of Appeal</p>
+          <p style="margin:0;color:#5A4E45;font-size:13px;line-height:1.7;">
+            If you wish to appeal this decision, you must submit a written notice of appeal to the
+            Office of the Registrar within <strong>ten (10) working days</strong> of this notice.
+            Your appeal must state the grounds and include any new evidence not previously presented.
+          </p>
+          ${contactEmail ? `<p style="margin:8px 0 0;color:#5A4E45;font-size:13px;">Contact: <a href="mailto:${contactEmail}" style="color:#7B1C1C;">${contactEmail}</a></p>` : ''}
+        </div>` : `
+        <p style="color:#5A4E45;margin:0 0 24px;">
+          The Disciplinary Panel has considered the complaint and your response and has determined
+          that the allegation against you is not upheld. This case is now closed.
+          No further action will be taken.
+        </p>`}
+
+        <div style="text-align:center;margin:32px 0;">
+          <a href="${portalUrl}" style="background:#7B1C1C;color:#fff;padding:14px 32px;border-radius:6px;text-decoration:none;font-weight:600;font-size:15px;display:inline-block;">
+            View Full Record →
+          </a>
+        </div>
+
+        <p style="color:#8A7F74;font-size:13px;margin:0;">
+          This communication constitutes the University's official notification of the panel's decision.
+        </p>
+      </div>
+      <p style="text-align:center;color:#8A7F74;font-size:12px;margin:16px 0 0;">
+        TIDDS — Tertiary Institution Digital Disciplinary System<br/>
+        Powered by Reforma Digital Solutions Ltd
+      </p>
+    </div>
+  `;
+}
+
 export function invitationEmailHtml({ firstName, institutionName, role, activateUrl }) {
   return `
     <div style="font-family:Inter,sans-serif;max-width:600px;margin:0 auto;padding:32px 24px;background:#fff;">
@@ -338,3 +538,4 @@ export function invitationEmailHtml({ firstName, institutionName, role, activate
     </div>
   `;
 }
+

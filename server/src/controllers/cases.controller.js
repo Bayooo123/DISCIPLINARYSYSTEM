@@ -5,6 +5,7 @@ import { generateCaseReference } from '../utils/caseRef.utils.js';
 import { addWorkingDays } from '../utils/workingDays.utils.js';
 import { lookupStudent } from '../services/sis.service.js';
 import { dispatchEmail, complaintNoticeHtml, officerConfirmationHtml } from '../services/notification.service.js';
+import { randomUUID } from 'crypto';
 
 const prisma = new PrismaClient();
 
@@ -52,24 +53,28 @@ export async function fileComplaint(req, res) {
       return res.status(422).json({ error: 'One or more invalid offence type IDs' });
     }
 
-    const referenceNumber   = await generateCaseReference(institutionId);
-    const responseDeadline  = addWorkingDays(new Date(), 3);
+    const referenceNumber     = await generateCaseReference(institutionId);
+    const responseDeadline    = addWorkingDays(new Date(), 3);
+    const studentAccessToken  = randomUUID();
+    const studentAccessExpiry = new Date(Date.now() + 72 * 60 * 60 * 1000);
 
     const newCase = await prisma.case.create({
       data: {
         referenceNumber,
         institutionId,
-        studentId:       student.id,
-        filedById:       officer.userId,
-        originType:      originType || 'FACULTY',
+        studentId:            student.id,
+        filedById:            officer.userId,
+        originType:           originType || 'FACULTY',
         description,
-        incidentDate:    new Date(incidentDate),
-        incidentLocation: incidentLocation || null,
-        witnessName:     witnessName || null,
-        courseCode:      courseCode  || null,
-        courseTitle:     courseTitle || null,
+        incidentDate:         new Date(incidentDate),
+        incidentLocation:     incidentLocation || null,
+        witnessName:          witnessName || null,
+        courseCode:           courseCode  || null,
+        courseTitle:          courseTitle || null,
         responseDeadline,
-        status:          'COMPLAINT_FILED',
+        status:               'COMPLAINT_FILED',
+        studentAccessToken,
+        studentAccessExpiry,
         offences: {
           create: offenceTypeIds.map(id => ({ offenceTypeId: id })),
         },
@@ -92,6 +97,7 @@ export async function fileComplaint(req, res) {
     await prisma.case.update({ where: { id: newCase.id }, data: { status: 'STUDENT_NOTIFIED' } });
 
     // Send student notification email (non-fatal)
+    const studentPortalUrl = process.env.STUDENT_PORTAL_URL || 'http://localhost:5174';
     const studentEmailHtml = complaintNoticeHtml({
       student,
       referenceNumber,
@@ -102,7 +108,7 @@ export async function fileComplaint(req, res) {
       courseCode:       courseCode || null,
       courseTitle:      courseTitle || null,
       responseDeadline,
-      portalUrl:        process.env.CLIENT_URL || 'http://localhost:5173',
+      portalUrl:        `${studentPortalUrl}/access/${studentAccessToken}`,
     });
 
     try {

@@ -103,13 +103,14 @@ model Student {
   phone         String?
   faculty       String
   department    String?
-  level           String
-  yearOfAdmission Int?
-  gpa             Float?
-  portalUserId    String?
-  isActive        Boolean  @default(true)
-  createdAt       DateTime @default(now())
-  cases           Case[]
+  level             String
+  yearOfAdmission   Int?
+  gpa               Float?
+  portalUserId      String?
+  portalLastSeenAt  DateTime?
+  isActive          Boolean  @default(true)
+  createdAt         DateTime @default(now())
+  cases             Case[]
 }
 
 // ─── OFFENCE TYPE ─────────────────────────────────────────
@@ -190,6 +191,11 @@ model Case {
   closedAt                    DateTime?
   officerNotifiedOnResponse   Boolean      @default(false)
   officerNotifiedOnVerdict    Boolean      @default(false)
+  studentAccessToken          String?      @unique
+  studentAccessExpiry         DateTime?
+  studentLastAccessAt         DateTime?
+  studentResponseEdited       Boolean      @default(false)
+  studentResponseLocked       Boolean      @default(false)
   offences                    CaseOffence[]
   evidence                    Evidence[]
   notifications               Notification[]

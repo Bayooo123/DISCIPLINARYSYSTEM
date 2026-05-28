@@ -3,6 +3,8 @@ const { PrismaClient } = pkg;
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
 
+const SEVENTY_TWO_HOURS = 72 * 60 * 60 * 1000;
+
 const prisma = new PrismaClient();
 
 async function main() {
@@ -227,9 +229,13 @@ async function main() {
         witnessName:      'Dr. Emeka Obi (Chief Invigilator)',
         courseCode:       'EEG 412',
         courseTitle:      'Advanced Control Systems',
-        filedAt:          new Date('2025-11-15T09:30:00Z'),
-        responseDeadline: new Date('2025-11-20T23:59:00Z'),
-        status:           'RESPONSE_RECEIVED',
+        filedAt:              new Date('2025-11-15T09:30:00Z'),
+        responseDeadline:     new Date('2025-11-20T23:59:00Z'),
+        status:               'RESPONSE_RECEIVED',
+        studentAccessToken:   crypto.randomUUID(),
+        studentAccessExpiry:  new Date(Date.now() + SEVENTY_TWO_HOURS),
+        studentResponseEdited: false,
+        studentResponseLocked: true,
         studentResponse:  'I did not intend to cheat. The phone was in my pocket and vibrated. I picked it up reflexively. I understand this looks bad but I was not using it to copy. I am deeply sorry.',
         studentResponseAt: new Date('2025-11-18T14:22:00Z'),
         plea:             'GUILTY',
@@ -267,9 +273,13 @@ async function main() {
         incidentDate:     new Date('2025-11-20'),
         incidentLocation: 'Moremi Hall, Room 214',
         witnessName:      'Hall Warden — Mrs. Grace Adeyinka',
-        filedAt:          new Date('2025-11-21T10:00:00Z'),
-        responseDeadline: new Date('2025-11-26T23:59:00Z'),
-        status:           'AWAITING_RESPONSE',
+        filedAt:              new Date('2025-11-21T10:00:00Z'),
+        responseDeadline:     new Date('2025-11-26T23:59:00Z'),
+        status:               'AWAITING_RESPONSE',
+        studentAccessToken:   crypto.randomUUID(),
+        studentAccessExpiry:  new Date(Date.now() + SEVENTY_TWO_HOURS),
+        studentResponseEdited: false,
+        studentResponseLocked: false,
         offences: {
           create: [
             { offenceTypeId: createdOffences['Possession of Cannabis (Marijuana)'].id },

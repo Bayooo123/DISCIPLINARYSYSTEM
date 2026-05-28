@@ -14,6 +14,7 @@ import dashboardRoutes    from './routes/dashboard.routes.js';
 import logRoutes          from './routes/logs.routes.js';
 import casesRoutes        from './routes/cases.routes.js';
 import studentsRoutes     from './routes/students.routes.js';
+import studentRoutes      from './routes/student.routes.js';
 
 dotenv.config({ path: path.resolve(__dirname, '../../.env') });
 
@@ -32,6 +33,7 @@ app.use('/api/dashboard',                             dashboardRoutes);
 app.use('/api/logs',                                  logRoutes);
 app.use('/api/cases',                                 casesRoutes);
 app.use('/api/students',                              studentsRoutes);
+app.use('/api/student',                               studentRoutes);
 
 app.get('/api/health', (req, res) => res.json({ status: 'ok' }));
 
