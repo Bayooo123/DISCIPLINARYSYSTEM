@@ -2,6 +2,7 @@ import { Router } from 'express';
 import rateLimit from 'express-rate-limit';
 import multer from 'multer';
 import path from 'path';
+import fs from 'fs';
 import { fileURLToPath } from 'url';
 import { requireStudentAuth } from '../middleware/studentAuth.middleware.js';
 import { validateToken, getMe } from '../controllers/studentAuth.controller.js';
@@ -17,8 +18,15 @@ const tokenLimiter = rateLimit({
   legacyHeaders: false,
 });
 
+const UPLOAD_DIR = process.env.VERCEL
+  ? '/tmp/uploads'
+  : path.resolve(__dirname, '../../../uploads');
+
 const storage = multer.diskStorage({
-  destination: path.resolve(__dirname, '../../../uploads'),
+  destination: (req, file, cb) => {
+    fs.mkdirSync(UPLOAD_DIR, { recursive: true });
+    cb(null, UPLOAD_DIR);
+  },
   filename: (req, file, cb) => {
     const unique = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
     cb(null, `${unique}-${file.originalname}`);
