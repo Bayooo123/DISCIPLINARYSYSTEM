@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { body } from 'express-validator';
 import multer from 'multer';
 import path from 'path';
+import fs from 'fs';
 import { fileURLToPath } from 'url';
 import { requireAuth as authenticate } from '../middleware/auth.middleware.js';
 import { requireRole } from '../middleware/role.middleware.js';
@@ -16,8 +17,16 @@ import {
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
+// Use /tmp on read-only serverless filesystems (Vercel), local uploads/ elsewhere
+const UPLOAD_DIR = process.env.VERCEL
+  ? '/tmp/uploads'
+  : path.resolve(__dirname, '../../../uploads');
+
 const storage = multer.diskStorage({
-  destination: path.resolve(__dirname, '../../../uploads'),
+  destination: (req, file, cb) => {
+    fs.mkdirSync(UPLOAD_DIR, { recursive: true });
+    cb(null, UPLOAD_DIR);
+  },
   filename: (req, file, cb) => {
     const unique = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
     cb(null, `${unique}-${file.originalname}`);
