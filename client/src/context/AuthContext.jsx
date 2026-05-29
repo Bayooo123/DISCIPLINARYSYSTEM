@@ -8,8 +8,8 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const stored = localStorage.getItem('tidds_user');
-    const token  = localStorage.getItem('tidds_token');
+    const stored = localStorage.getItem('candor_user');
+    const token  = localStorage.getItem('candor_token');
     if (stored && token) {
       setUser(JSON.parse(stored));
     }
@@ -18,15 +18,15 @@ export function AuthProvider({ children }) {
 
   async function login(email, password) {
     const data = await api.post('/auth/login', { email, password });
-    localStorage.setItem('tidds_token', data.token);
-    localStorage.setItem('tidds_user',  JSON.stringify(data.user));
+    localStorage.setItem('candor_token', data.token);
+    localStorage.setItem('candor_user',  JSON.stringify(data.user));
     setUser(data.user);
     return data.user;
   }
 
   function logout() {
-    localStorage.removeItem('tidds_token');
-    localStorage.removeItem('tidds_user');
+    localStorage.removeItem('candor_token');
+    localStorage.removeItem('candor_user');
     setUser(null);
   }
 

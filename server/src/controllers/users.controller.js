@@ -54,7 +54,7 @@ export async function createUser(req, res) {
       institutionId,
       institution,
       to:      email,
-      subject: `You have been invited to ${institution.name} — TIDDS Platform`,
+      subject: `You have been invited to ${institution.name} — CANDOR`,
       html:    invitationEmailHtml({ firstName, institutionName: institution.name, role, activateUrl }),
       type:    'INVITATION',
     }).catch(console.error);
@@ -133,7 +133,7 @@ export async function resendInvite(req, res) {
       institutionId,
       institution,
       to:      user.email,
-      subject: `Invitation reminder — ${institution.name} TIDDS Platform`,
+      subject: `Invitation reminder — ${institution.name} CANDOR`,
       html:    invitationEmailHtml({ firstName: user.firstName, institutionName: institution.name, role: user.role, activateUrl }),
       type:    'INVITATION',
     });

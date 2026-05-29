@@ -394,7 +394,7 @@ export async function scheduleHearing(req, res) {
             institutionId, institution,
             to: pm.user.email,
             subject: `Hearing ${isReschedule ? 'Rescheduled' : 'Scheduled'} — Case ${c.referenceNumber}`,
-            html: `<p>Dear ${pm.user.firstName},</p><p>A hearing has been ${isReschedule ? 'rescheduled' : 'scheduled'} for Case <strong>${c.referenceNumber}</strong>.</p><p><strong>Date:</strong> ${new Date(hearingDate).toDateString()}<br/><strong>Time:</strong> ${hearingTime}<br/><strong>Venue:</strong> ${hearingVenue}</p><p>Please log in to the TIDDS platform for full details.</p>`,
+            html: `<p>Dear ${pm.user.firstName},</p><p>A hearing has been ${isReschedule ? 'rescheduled' : 'scheduled'} for Case <strong>${c.referenceNumber}</strong>.</p><p><strong>Date:</strong> ${new Date(hearingDate).toDateString()}<br/><strong>Time:</strong> ${hearingTime}<br/><strong>Venue:</strong> ${hearingVenue}</p><p>Please log in to the CANDOR platform for full details.</p>`,
             type: 'APPEARANCE_NOTICE',
             caseId,
           });

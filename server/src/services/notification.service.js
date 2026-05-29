@@ -159,7 +159,7 @@ export function complaintNoticeHtml({
         </p>
       </div>
       <p style="text-align:center;color:#8A7F74;font-size:12px;margin:16px 0 0;">
-        TIDDS — Tertiary Institution Digital Disciplinary System<br/>
+        CANDOR — Institutional Misconduct, Handled with Precision<br/>
         Powered by Reforma Digital Solutions Ltd
       </p>
     </div>
@@ -212,7 +212,7 @@ export function officerConfirmationHtml({
         </p>
       </div>
       <p style="text-align:center;color:#8A7F74;font-size:12px;margin:16px 0 0;">
-        TIDDS — Tertiary Institution Digital Disciplinary System<br/>
+        CANDOR — Institutional Misconduct, Handled with Precision<br/>
         Powered by Reforma Digital Solutions Ltd
       </p>
     </div>
@@ -252,7 +252,7 @@ export function officerResponseAlertHtml({
         </div>
       </div>
       <p style="text-align:center;color:#8A7F74;font-size:12px;margin:16px 0 0;">
-        TIDDS — Tertiary Institution Digital Disciplinary System<br/>
+        CANDOR — Institutional Misconduct, Handled with Precision<br/>
         Powered by Reforma Digital Solutions Ltd
       </p>
     </div>
@@ -297,7 +297,7 @@ export function officerVerdictAlertHtml({
         </div>
       </div>
       <p style="text-align:center;color:#8A7F74;font-size:12px;margin:16px 0 0;">
-        TIDDS — Tertiary Institution Digital Disciplinary System<br/>
+        CANDOR — Institutional Misconduct, Handled with Precision<br/>
         Powered by Reforma Digital Solutions Ltd
       </p>
     </div>
@@ -364,7 +364,7 @@ export function studentAcknowledgementHtml({
         </p>
       </div>
       <p style="text-align:center;color:#8A7F74;font-size:12px;margin:16px 0 0;">
-        TIDDS — Tertiary Institution Digital Disciplinary System<br/>
+        CANDOR — Institutional Misconduct, Handled with Precision<br/>
         Powered by Reforma Digital Solutions Ltd
       </p>
     </div>
@@ -429,7 +429,7 @@ export function hearingNoticeHtml({
         </div>
       </div>
       <p style="text-align:center;color:#8A7F74;font-size:12px;margin:16px 0 0;">
-        TIDDS — Tertiary Institution Digital Disciplinary System<br/>
+        CANDOR — Institutional Misconduct, Handled with Precision<br/>
         Powered by Reforma Digital Solutions Ltd
       </p>
     </div>
@@ -497,7 +497,7 @@ export function verdictNoticeHtml({
         </p>
       </div>
       <p style="text-align:center;color:#8A7F74;font-size:12px;margin:16px 0 0;">
-        TIDDS — Tertiary Institution Digital Disciplinary System<br/>
+        CANDOR — Institutional Misconduct, Handled with Precision<br/>
         Powered by Reforma Digital Solutions Ltd
       </p>
     </div>
@@ -532,7 +532,7 @@ export function panelAssignmentHtml({ member, panelRole, referenceNumber, studen
         <p style="color:#1C1410;font-weight:600;margin:0 0 8px;">Offence(s):</p>
         <ul style="margin:0 0 24px;padding-left:20px;">${offenceList}</ul>
         <p style="color:#5A4E45;margin:0 0 24px;">
-          You can access the full case file, including the complaint particulars, evidence, and student response, by logging in to the TIDDS platform:
+          You can access the full case file, including the complaint particulars, evidence, and student response, by logging in to the CANDOR platform:
         </p>
         <div style="text-align:center;margin:32px 0;">
           <a href="${platformUrl}/panel/cases/${caseId}" style="background:#7B1C1C;color:#fff;padding:14px 32px;border-radius:6px;text-decoration:none;font-weight:600;font-size:15px;display:inline-block;">
@@ -541,7 +541,7 @@ export function panelAssignmentHtml({ member, panelRole, referenceNumber, studen
         </div>
         <p style="color:#8A7F74;font-size:13px;">A hearing date will be communicated to you shortly.</p>
       </div>
-      <p style="text-align:center;color:#8A7F74;font-size:12px;margin:16px 0 0;">TIDDS — Tertiary Institution Digital Disciplinary System<br/>Powered by Reforma Digital Solutions Ltd</p>
+      <p style="text-align:center;color:#8A7F74;font-size:12px;margin:16px 0 0;">CANDOR — Institutional Misconduct, Handled with Precision<br/>Powered by Reforma Digital Solutions Ltd</p>
     </div>
   `;
 }
@@ -583,7 +583,7 @@ export function ratificationRequestHtml({ secretary, chairpersonName, referenceN
           </a>
         </div>
       </div>
-      <p style="text-align:center;color:#8A7F74;font-size:12px;margin:16px 0 0;">TIDDS — Tertiary Institution Digital Disciplinary System<br/>Powered by Reforma Digital Solutions Ltd</p>
+      <p style="text-align:center;color:#8A7F74;font-size:12px;margin:16px 0 0;">CANDOR — Institutional Misconduct, Handled with Precision<br/>Powered by Reforma Digital Solutions Ltd</p>
     </div>
   `;
 }
@@ -614,7 +614,7 @@ export function nonAppearanceAlertHtml({ chairman, referenceNumber, student, hea
           </table>
         </div>
         <div style="background:#F7F3EE;border-left:4px solid #C9930A;padding:12px;border-radius:0 6px 6px 0;margin:0 0 24px;">
-          <p style="margin:0;color:#5A4E45;font-size:13px;">Per University regulations, a student who fails to appear before the Misconduct Panel is subject to suspension. Please log in to the TIDDS platform to review this case and determine how to proceed.</p>
+          <p style="margin:0;color:#5A4E45;font-size:13px;">Per University regulations, a student who fails to appear before the Misconduct Panel is subject to suspension. Please log in to the CANDOR platform to review this case and determine how to proceed.</p>
         </div>
         <div style="text-align:center;margin:32px 0;">
           <a href="${platformUrl}/committee/cases/${caseId}" style="background:#7B1C1C;color:#fff;padding:14px 32px;border-radius:6px;text-decoration:none;font-weight:600;font-size:15px;display:inline-block;">
@@ -622,7 +622,7 @@ export function nonAppearanceAlertHtml({ chairman, referenceNumber, student, hea
           </a>
         </div>
       </div>
-      <p style="text-align:center;color:#8A7F74;font-size:12px;margin:16px 0 0;">TIDDS — Tertiary Institution Digital Disciplinary System<br/>Powered by Reforma Digital Solutions Ltd</p>
+      <p style="text-align:center;color:#8A7F74;font-size:12px;margin:16px 0 0;">CANDOR — Institutional Misconduct, Handled with Precision<br/>Powered by Reforma Digital Solutions Ltd</p>
     </div>
   `;
 }
@@ -631,14 +631,14 @@ export function invitationEmailHtml({ firstName, institutionName, role, activate
   return `
     <div style="font-family:Inter,sans-serif;max-width:600px;margin:0 auto;padding:32px 24px;background:#fff;">
       <div style="background:#7B1C1C;padding:24px;border-radius:8px 8px 0 0;text-align:center;">
-        <h1 style="color:#C9930A;font-family:Georgia,serif;margin:0;font-size:24px;">TIDDS Platform</h1>
+        <h1 style="color:#C9930A;font-family:Georgia,serif;margin:0;font-size:24px;">CANDOR</h1>
         <p style="color:rgba(255,255,255,0.8);margin:4px 0 0;font-size:13px;">Tertiary Institution Digital Disciplinary System</p>
       </div>
       <div style="border:1px solid #E0D8CC;border-top:none;padding:32px;border-radius:0 0 8px 8px;">
         <p style="color:#1C1410;margin:0 0 16px;">Dear ${firstName},</p>
         <p style="color:#1C1410;margin:0 0 16px;">
           You have been added as <strong>${role.replace(/_/g, ' ')}</strong> on the
-          <strong>${institutionName}</strong> Digital Disciplinary Platform (TIDDS)
+          <strong>${institutionName}</strong> disciplinary platform (CANDOR)
           by Reforma Digital Solutions Ltd.
         </p>
         <p style="color:#1C1410;margin:0 0 24px;">
@@ -655,7 +655,7 @@ export function invitationEmailHtml({ firstName, institutionName, role, activate
         </p>
       </div>
       <p style="text-align:center;color:#8A7F74;font-size:12px;margin:16px 0 0;">
-        TIDDS — Tertiary Institution Digital Disciplinary System<br/>
+        CANDOR — Institutional Misconduct, Handled with Precision<br/>
         Powered by Reforma Digital Solutions Ltd
       </p>
     </div>

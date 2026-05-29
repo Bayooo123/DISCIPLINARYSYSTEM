@@ -65,8 +65,8 @@ export async function testEmail(req, res) {
       await sendEmail({
         institution,
         to:      testRecipient,
-        subject: 'TIDDS — Test Email',
-        html:    '<p>This is a test email from the TIDDS platform. Email delivery is working correctly.</p>',
+        subject: 'CANDOR — Test Email',
+        html:    '<p>This is a test email from the CANDOR platform. Email delivery is working correctly.</p>',
       });
     } catch (err) {
       status = 'failed';
@@ -97,7 +97,7 @@ export async function testSMS(req, res) {
     try {
       await sendSMS({
         to:       testPhone,
-        message:  'This is a test SMS from the TIDDS platform.',
+        message:  'This is a test SMS from the CANDOR platform.',
         senderId: institution?.smsSenderId,
       });
     } catch (err) {

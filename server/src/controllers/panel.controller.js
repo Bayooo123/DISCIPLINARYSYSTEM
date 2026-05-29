@@ -424,7 +424,7 @@ export async function rejectRatification(req, res) {
           institutionId, institution,
           to: chairpersonMember.user.email,
           subject: `Verdict Ratification Rejected — Case ${c.referenceNumber}`,
-          html: `<p>Dear ${chairpersonMember.user.firstName},</p><p>The Secretary has rejected the ratification of your verdict for Case <strong>${c.referenceNumber}</strong>.</p><p><strong>Reason:</strong> ${reason}</p><p>Please log in to the TIDDS platform to revise and resubmit the verdict.</p>`,
+          html: `<p>Dear ${chairpersonMember.user.firstName},</p><p>The Secretary has rejected the ratification of your verdict for Case <strong>${c.referenceNumber}</strong>.</p><p><strong>Reason:</strong> ${reason}</p><p>Please log in to the CANDOR platform to revise and resubmit the verdict.</p>`,
           type: 'VERDICT_NOTICE',
           caseId,
         });

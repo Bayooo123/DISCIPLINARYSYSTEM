@@ -23,8 +23,8 @@ export default function AcceptInvitation() {
     setLoading(true);
     try {
       const data = await api.post('/auth/accept-invite', { token, password });
-      localStorage.setItem('tidds_token', data.token);
-      localStorage.setItem('tidds_user',  JSON.stringify(data.user));
+      localStorage.setItem('candor_token', data.token);
+      localStorage.setItem('candor_user',  JSON.stringify(data.user));
       setSuccess(true);
       setTimeout(() => {
         const role = data.user.role;
@@ -42,7 +42,7 @@ export default function AcceptInvitation() {
       <div className="w-full max-w-sm bg-white rounded-2xl shadow-xl overflow-hidden">
         <div className="bg-maroon px-8 py-6 text-center">
           <h1 className="text-gold font-serif font-bold text-xl">Activate Your Account</h1>
-          <p className="text-white/70 text-xs mt-1">TIDDS Platform — Reforma Digital Solutions</p>
+          <p className="text-white/70 text-xs mt-1">CANDOR — Reforma Digital Solutions</p>
         </div>
         <form onSubmit={handleSubmit} className="px-8 py-7 space-y-4">
           {success

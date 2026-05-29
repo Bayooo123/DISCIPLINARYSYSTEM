@@ -39,9 +39,9 @@ export default function Login() {
             <div className="w-12 h-12 bg-gold rounded-xl flex items-center justify-center mx-auto mb-4">
               <span className="text-white font-serif font-bold text-2xl">⚖</span>
             </div>
-            <h1 className="text-gold font-serif font-bold text-2xl leading-tight">TIDDS</h1>
+            <h1 className="text-gold font-serif font-bold text-2xl leading-tight">CANDOR</h1>
             <p className="text-white/70 text-xs mt-1 leading-snug">
-              Tertiary Institution Digital<br />Disciplinary System
+              Institutional Misconduct,<br />Handled with Precision
             </p>
           </div>
 
