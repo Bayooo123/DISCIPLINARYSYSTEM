@@ -28,7 +28,14 @@ export default function AcceptInvitation() {
       setSuccess(true);
       setTimeout(() => {
         const role = data.user.role;
-        navigate(role === 'PLATFORM_ADMIN' ? '/admin/dashboard' : '/institution/dashboard');
+        const dest =
+          role === 'PLATFORM_ADMIN'    ? '/admin/dashboard'     :
+          role === 'INSTITUTION_ADMIN' ? '/institution/dashboard':
+          role === 'COMPLAINTS_OFFICER'? '/officer/dashboard'   :
+          role === 'COMMITTEE_MEMBER'  ? '/committee/dashboard' :
+          role === 'PANEL_MEMBER'      ? '/panel/dashboard'     :
+          '/login';
+        window.location.href = dest;
       }, 1500);
     } catch (err) {
       setError(err.error || 'This invitation link is invalid or has expired.');
