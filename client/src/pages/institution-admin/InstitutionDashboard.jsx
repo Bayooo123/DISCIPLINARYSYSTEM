@@ -16,7 +16,7 @@ export default function InstitutionDashboard() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!user?.institutionId) return;
+    if (!user?.institutionId) { setLoading(false); return; }
     api.get(`/dashboard/institution/${user.institutionId}`)
       .then(setData)
       .catch(console.error)

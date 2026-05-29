@@ -112,7 +112,7 @@ export async function acceptInvite(req, res) {
 
     res.json({
       token: jwtToken,
-      user:  { id: user.id, email: user.email, role: user.role, firstName: user.firstName, lastName: user.lastName },
+      user:  { id: user.id, email: user.email, role: user.role, firstName: user.firstName, lastName: user.lastName, institutionId: user.institutionId },
     });
   } catch (err) {
     console.error(err);
