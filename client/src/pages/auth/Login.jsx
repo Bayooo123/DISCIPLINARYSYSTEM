@@ -19,8 +19,11 @@ export default function Login() {
     setLoading(true);
     try {
       const user = await login(email, password);
-      if (user.role === 'PLATFORM_ADMIN')    navigate('/admin/dashboard');
-      else if (user.role === 'INSTITUTION_ADMIN') navigate('/institution/dashboard');
+      if      (user.role === 'PLATFORM_ADMIN')     navigate('/admin/dashboard');
+      else if (user.role === 'INSTITUTION_ADMIN')  navigate('/institution/dashboard');
+      else if (user.role === 'COMPLAINTS_OFFICER') navigate('/officer/dashboard');
+      else if (user.role === 'COMMITTEE_MEMBER')   navigate('/committee/dashboard');
+      else if (user.role === 'PANEL_MEMBER')        navigate('/panel/dashboard');
       else navigate('/login');
     } catch (err) {
       setError(err.error || 'Invalid credentials. Please try again.');
