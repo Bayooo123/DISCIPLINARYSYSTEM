@@ -627,23 +627,25 @@ export function nonAppearanceAlertHtml({ chairman, referenceNumber, student, hea
   `;
 }
 
-export function invitationEmailHtml({ firstName, institutionName, role, activateUrl }) {
+export function invitationEmailHtml({ firstName, lastName, jobTitle, institutionName, role, activateUrl }) {
+  const displayName = [firstName, lastName].filter(Boolean).join(' ') || firstName;
+  const displayRole = jobTitle || role.split('_').map(w => w[0] + w.slice(1).toLowerCase()).join(' ');
   return `
     <div style="font-family:Inter,sans-serif;max-width:600px;margin:0 auto;padding:32px 24px;background:#fff;">
       <div style="background:#7B1C1C;padding:24px;border-radius:8px 8px 0 0;text-align:center;">
         <h1 style="color:#C9930A;font-family:Georgia,serif;margin:0;font-size:24px;">CANDOR</h1>
-        <p style="color:rgba(255,255,255,0.8);margin:4px 0 0;font-size:13px;">Tertiary Institution Digital Disciplinary System</p>
+        <p style="color:rgba(255,255,255,0.8);margin:4px 0 0;font-size:13px;">Institutional Misconduct, Handled with Precision</p>
       </div>
       <div style="border:1px solid #E0D8CC;border-top:none;padding:32px;border-radius:0 0 8px 8px;">
-        <p style="color:#1C1410;margin:0 0 16px;">Dear ${firstName},</p>
+        <p style="color:#1C1410;margin:0 0 16px;">Dear ${displayName},</p>
         <p style="color:#1C1410;margin:0 0 16px;">
-          You have been added as <strong>${role.replace(/_/g, ' ')}</strong> on the
-          <strong>${institutionName}</strong> disciplinary platform (CANDOR)
-          by Reforma Digital Solutions Ltd.
+          You have been designated as <strong>${displayRole}</strong> on the
+          <strong>${institutionName}</strong> instance of <strong>CANDOR</strong> — a digital disciplinary
+          management platform currently being presented, tested, and refined for use across Nigerian tertiary institutions.
         </p>
-        <p style="color:#1C1410;margin:0 0 24px;">
-          Please click the button below to set your password and activate your account.
-          This link will expire in <strong>72 hours</strong>.
+        <p style="color:#1C1410;margin:0 0 16px;">
+          This link grants you access to the platform. Please click the button below to set your password
+          and activate your account. The link will expire in <strong>72 hours</strong>.
         </p>
         <div style="text-align:center;margin:32px 0;">
           <a href="${activateUrl}" style="background:#7B1C1C;color:#fff;padding:14px 32px;border-radius:6px;text-decoration:none;font-weight:600;font-size:15px;display:inline-block;">
