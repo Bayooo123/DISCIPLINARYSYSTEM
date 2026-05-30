@@ -70,6 +70,8 @@ export async function login(req, res) {
         role:          user.role,
         firstName:     user.firstName,
         lastName:      user.lastName,
+        jobTitle:      user.jobTitle   || null,
+        department:    user.department || null,
         institutionId: user.institutionId,
         isChairman:    user.isChairman || false,
         institution:   user.institution ? stripSensitive(user.institution) : null,
@@ -113,7 +115,7 @@ export async function acceptInvite(req, res) {
 
     res.json({
       token: jwtToken,
-      user:  { id: user.id, email: user.email, role: user.role, firstName: user.firstName, lastName: user.lastName, institutionId: user.institutionId, isChairman: user.isChairman || false },
+      user:  { id: user.id, email: user.email, role: user.role, firstName: user.firstName, lastName: user.lastName, jobTitle: user.jobTitle || null, institutionId: user.institutionId, isChairman: user.isChairman || false },
     });
   } catch (err) {
     console.error(err);

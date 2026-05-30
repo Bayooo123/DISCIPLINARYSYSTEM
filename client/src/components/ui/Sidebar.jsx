@@ -68,7 +68,7 @@ export default function Sidebar({ navItems, sectionLabels = {} }) {
             </div>
             <div className="min-w-0">
               <p className="text-white text-xs font-medium truncate">{user.firstName} {user.lastName}</p>
-              <p className="text-white/40 text-xs truncate">{user.email}</p>
+              <p className="text-white/40 text-xs truncate">{user.jobTitle || user.email}</p>
             </div>
           </div>
           <button
