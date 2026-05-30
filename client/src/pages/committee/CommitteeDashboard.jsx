@@ -65,27 +65,55 @@ export default function CommitteeDashboard() {
   if (loading) return <CommitteeLayout title="Dashboard"><FullPageSpinner /></CommitteeLayout>;
 
   const stats = data?.stats || {};
+  const actions = data?.chairmanActions || {};
+  const isChairman = user?.isChairman;
+  const totalPendingActions = (actions.needsPanel?.length || 0) + (actions.needsHearing?.length || 0) + (actions.hearingToday?.length || 0);
 
   return (
     <CommitteeLayout title="Committee Dashboard">
+
+      {/* Chairman Action Queue */}
+      {isChairman && totalPendingActions > 0 && (
+        <div className="bg-maroon rounded-xl p-5 mb-6 text-white">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <p className="font-serif font-bold text-lg">Your Action Queue</p>
+              <p className="text-white/60 text-xs mt-0.5">{totalPendingActions} item{totalPendingActions !== 1 ? 's' : ''} require your attention</p>
+            </div>
+            <span className="bg-gold text-maroon text-xs font-bold px-3 py-1 rounded-full">{totalPendingActions} pending</span>
+          </div>
+          <div className="space-y-3">
+            {actions.hearingToday?.map(a => (
+              <ActionItem key={a.caseId} icon="🔔" urgency="today" label={`Hearing today — ${a.referenceNumber} · ${a.studentName}`} sub={`${a.hearingTime} · ${a.hearingVenue}`} onClick={() => navigate(`/committee/cases/${a.caseId}`)} />
+            ))}
+            {actions.needsPanel?.map(a => (
+              <ActionItem key={a.caseId} icon="👥" urgency="high" label={`Constitute panel — ${a.referenceNumber} · ${a.studentName}`} sub="Response received, awaiting panel assignment" onClick={() => navigate(`/committee/cases/${a.caseId}`)} />
+            ))}
+            {actions.needsHearing?.map(a => (
+              <ActionItem key={a.caseId} icon="📅" urgency="medium" label={`Schedule hearing — ${a.referenceNumber} · ${a.studentName}`} sub="Panel constituted, hearing date not yet set" onClick={() => navigate(`/committee/cases/${a.caseId}`)} />
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <StatCard label="Total Cases"       value={stats.totalCases || 0}       colour="maroon" />
-        <StatCard label="Pending Response"  value={stats.pendingResponse || 0}  colour="amber" />
+        <StatCard label="Total Cases"        value={stats.totalCases || 0}       colour="maroon" />
+        <StatCard label="Pending Response"   value={stats.pendingResponse || 0}  colour="amber" />
         <StatCard label="Hearings This Week" value={stats.hearingsThisWeek || 0} colour="teal" />
-        <StatCard label="Closed This Year"  value={stats.closedThisYear || 0}   colour="green" />
+        <StatCard label="Cases Closed"       value={stats.closedThisYear || 0}   colour="green" />
       </div>
 
       {/* Alert strips */}
-      <AlertStrip colour="red" title="🔴 Non-Appearance Flags"
+      <AlertStrip colour="red" title="Non-Appearance Flags"
         items={(data?.nonAppearanceFlags || []).map(f => ({ caseId: f.caseId, label: `${f.referenceNumber} · ${f.studentName} · Hearing was ${formatDate(f.hearingDate)}` }))}
         cta="View Case" onAction={id => navigate(`/committee/cases/${id}`)} />
 
-      <AlertStrip colour="yellow" title="🟡 Verdicts Awaiting Ratification"
+      <AlertStrip colour="yellow" title="Verdicts Awaiting Ratification"
         items={(data?.awaitingRatification || []).map(f => ({ caseId: f.caseId, label: `${f.referenceNumber} · ${f.studentName} · Recorded by ${f.chairpersonName} on ${formatDate(f.verdictRecordedAt)}` }))}
         cta="View Case" onAction={id => navigate(`/committee/cases/${id}`)} />
 
-      <AlertStrip colour="amber" title="🟠 Overdue Responses"
+      <AlertStrip colour="amber" title="Overdue Responses"
         items={(data?.overdueAlerts || []).map(f => ({ caseId: f.caseId, label: `${f.referenceNumber} · ${f.studentName} · Deadline passed ${f.daysPast} day${f.daysPast !== 1 ? 's' : ''} ago` }))}
         cta="View Case" onAction={id => navigate(`/committee/cases/${id}`)} />
 
@@ -143,6 +171,20 @@ function RecentCases({ navigate }) {
         </div>
       ))}
     </div>
+  );
+}
+
+function ActionItem({ icon, urgency, label, sub, onClick }) {
+  const urgencyBg = { today: 'bg-white/20 border-white/30', high: 'bg-white/10 border-white/20', medium: 'bg-white/5 border-white/10' };
+  return (
+    <button onClick={onClick} className={`w-full text-left flex items-center gap-3 border rounded-lg px-4 py-3 hover:bg-white/25 transition-colors ${urgencyBg[urgency]}`}>
+      <span className="text-xl flex-shrink-0">{icon}</span>
+      <div className="flex-1 min-w-0">
+        <p className="text-sm font-medium text-white truncate">{label}</p>
+        <p className="text-xs text-white/60 mt-0.5 truncate">{sub}</p>
+      </div>
+      <span className="text-white/50 flex-shrink-0">→</span>
+    </button>
   );
 }
 

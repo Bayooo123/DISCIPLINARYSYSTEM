@@ -43,11 +43,12 @@ export async function getCommitteeDashboard(req, res) {
     const yearStart = new Date(now.getFullYear(), 0, 1);
 
     const [totalCases, pendingResponse, hearingsThisWeek, closedThisYear,
-           overdueAlerts, upcomingHearings, awaitingRatification, nonAppearanceFlags] = await Promise.all([
+           overdueAlerts, upcomingHearings, awaitingRatification, nonAppearanceFlags,
+           needsPanel, needsHearing, hearingToday] = await Promise.all([
       prisma.case.count({ where: { institutionId } }),
       prisma.case.count({ where: { institutionId, status: { in: ['STUDENT_NOTIFIED', 'AWAITING_RESPONSE'] } } }),
       prisma.case.count({ where: { institutionId, status: 'HEARING_SCHEDULED', hearingDate: { gte: now, lte: weekFromNow } } }),
-      prisma.case.count({ where: { institutionId, status: 'CLOSED', closedAt: { gte: yearStart } } }),
+      prisma.case.count({ where: { institutionId, status: 'CLOSED' } }),
       prisma.case.findMany({
         where: { institutionId, status: 'RESPONSE_OVERDUE' },
         include: { student: true },
@@ -71,6 +72,27 @@ export async function getCommitteeDashboard(req, res) {
         include: { student: true },
         orderBy: { nonAppearanceFlaggedAt: 'desc' },
         take: 10,
+      }),
+      prisma.case.findMany({
+        where: { institutionId, status: { in: ['RESPONSE_RECEIVED', 'RESPONSE_OVERDUE'] }, panel: null },
+        include: { student: true },
+        orderBy: { responseDeadline: 'asc' },
+        take: 10,
+      }),
+      prisma.case.findMany({
+        where: { institutionId, status: 'PANEL_CONSTITUTED' },
+        include: { student: true },
+        orderBy: { filedAt: 'asc' },
+        take: 10,
+      }),
+      prisma.case.findMany({
+        where: {
+          institutionId, status: 'HEARING_SCHEDULED',
+          hearingDate: { gte: new Date(now.toDateString()), lte: new Date(now.toDateString() + ' 23:59:59') },
+        },
+        include: { student: true },
+        orderBy: { hearingDate: 'asc' },
+        take: 5,
       }),
     ]);
 
@@ -99,6 +121,22 @@ export async function getCommitteeDashboard(req, res) {
         studentName: `${c.student.firstName} ${c.student.lastName}`,
         hearingDate: c.hearingDate, flaggedAt: c.nonAppearanceFlaggedAt,
       })),
+      chairmanActions: {
+        needsPanel: needsPanel.map(c => ({
+          caseId: c.id, referenceNumber: c.referenceNumber,
+          studentName: `${c.student.firstName} ${c.student.lastName}`,
+          status: c.status,
+        })),
+        needsHearing: needsHearing.map(c => ({
+          caseId: c.id, referenceNumber: c.referenceNumber,
+          studentName: `${c.student.firstName} ${c.student.lastName}`,
+        })),
+        hearingToday: hearingToday.map(c => ({
+          caseId: c.id, referenceNumber: c.referenceNumber,
+          studentName: `${c.student.firstName} ${c.student.lastName}`,
+          hearingTime: c.hearingTime, hearingVenue: c.hearingVenue,
+        })),
+      },
     });
   } catch (err) {
     console.error(err);

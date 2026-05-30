@@ -52,8 +52,38 @@ export default function CaseList() {
   const isChairman = user?.isChairman;
   const totalPages = Math.ceil(total / LIMIT);
 
+  const QUICK_FILTERS = [
+    { label: 'Needs Panel',          status: 'RESPONSE_RECEIVED',  colour: 'bg-blue-100 text-blue-800 hover:bg-blue-200' },
+    { label: 'Overdue',              status: 'RESPONSE_OVERDUE',   colour: 'bg-red-100 text-red-800 hover:bg-red-200' },
+    { label: 'Hearing Scheduled',    status: 'HEARING_SCHEDULED',  colour: 'bg-teal-100 text-teal-800 hover:bg-teal-200' },
+    { label: 'Awaiting Ratification',status: 'VERDICT_DELIVERED',  colour: 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200' },
+    { label: 'Closed',               status: 'CLOSED',             colour: 'bg-green-100 text-green-800 hover:bg-green-200' },
+  ];
+
   return (
     <CommitteeLayout title="All Cases">
+      {/* Quick filter chips */}
+      <div className="flex flex-wrap gap-2 mb-4">
+        {QUICK_FILTERS.map(q => (
+          <button
+            key={q.status}
+            onClick={() => { setFilters(f => ({ ...f, status: filters.status === q.status ? '' : q.status })); setPage(1); }}
+            className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors border ${
+              filters.status === q.status
+                ? 'bg-maroon text-white border-maroon'
+                : `${q.colour} border-transparent`
+            }`}
+          >
+            {q.label}
+          </button>
+        ))}
+        {filters.status && (
+          <button onClick={() => { setFilters(f => ({ ...f, status: '' })); setPage(1); }} className="px-3 py-1.5 rounded-full text-xs font-medium text-gray-500 hover:text-gray-700 border border-gray-200 hover:border-gray-300">
+            Clear ✕
+          </button>
+        )}
+      </div>
+
       {/* Filter bar */}
       <div className="bg-white border border-gray-200 rounded-xl p-4 mb-5 flex flex-wrap gap-3 items-end">
         <div className="flex-1 min-w-[200px]">

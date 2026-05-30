@@ -25,6 +25,22 @@ const VERDICT_LABELS = { UPHELD: 'Upheld', DISMISSED: 'Dismissed', PARTIALLY_UPH
 const VERDICT_CLS    = { UPHELD: 'text-red-700 bg-red-50', DISMISSED: 'text-green-700 bg-green-50', PARTIALLY_UPHELD: 'text-amber-700 bg-amber-50' };
 const PLEA_LABELS    = { GUILTY: 'Guilty', NOT_GUILTY: 'Not Guilty' };
 
+function tabBadges(c, isChairman) {
+  const badges = {};
+  if (!c) return badges;
+  if (isChairman) {
+    if (['RESPONSE_RECEIVED', 'RESPONSE_OVERDUE'].includes(c.status) && !c.panel)
+      badges.panel = { colour: 'bg-red-500', title: 'Action needed: constitute panel' };
+    if (c.status === 'PANEL_CONSTITUTED')
+      badges.panel = { colour: 'bg-amber-500', title: 'Action needed: schedule hearing' };
+  }
+  if (c.status === 'VERDICT_DELIVERED')
+    badges.verdict = { colour: 'bg-yellow-500', title: 'Verdict awaiting ratification' };
+  if (['HEARING_SCHEDULED', 'HEARING_COMPLETE'].includes(c.status) && isChairman)
+    badges.panel = { colour: 'bg-teal-500', title: 'Hearing details' };
+  return badges;
+}
+
 const TABS = [
   { id: 'info',     label: 'Case Info' },
   { id: 'evidence', label: 'Evidence' },
@@ -106,17 +122,24 @@ export default function CommitteeCaseDetail() {
 
       {/* Tab nav */}
       <div className="flex gap-1 mb-4 bg-white border border-gray-200 rounded-xl p-1 overflow-x-auto">
-        {TABS.map(t => (
-          <button
-            key={t.id}
-            onClick={() => setTab(t.id)}
-            className={`flex-shrink-0 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-              tab === t.id ? 'bg-maroon text-white' : 'text-gray-600 hover:bg-gray-100'
-            }`}
-          >
-            {t.label}
-          </button>
-        ))}
+        {TABS.map(t => {
+          const badge = tabBadges(c, isChairman)[t.id];
+          return (
+            <button
+              key={t.id}
+              onClick={() => setTab(t.id)}
+              className={`relative flex-shrink-0 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                tab === t.id ? 'bg-maroon text-white' : 'text-gray-600 hover:bg-gray-100'
+              }`}
+              title={badge?.title}
+            >
+              {t.label}
+              {badge && (
+                <span className={`absolute top-1.5 right-1.5 w-2 h-2 rounded-full ${badge.colour} ${tab === t.id ? 'ring-1 ring-white' : ''}`} />
+              )}
+            </button>
+          );
+        })}
       </div>
 
       {tab === 'info'     && <TabInfo c={c} />}
