@@ -22,7 +22,7 @@ export default function Sidebar({ navItems, sectionLabels = {} }) {
           </div>
           <div>
             <p className="text-white font-serif font-bold text-base leading-tight">CANDOR</p>
-            <p className="text-white/50 text-xs">Reforma Digital Solutions</p>
+            <p className="text-white/40 text-xs">Disciplinary Management</p>
           </div>
         </div>
       </div>

@@ -49,7 +49,7 @@ export default function AcceptInvitation() {
       <div className="w-full max-w-sm bg-white rounded-2xl shadow-xl overflow-hidden">
         <div className="bg-maroon px-8 py-6 text-center">
           <h1 className="text-gold font-serif font-bold text-xl">Activate Your Account</h1>
-          <p className="text-white/70 text-xs mt-1">CANDOR — Reforma Digital Solutions</p>
+          <p className="text-white/70 text-xs mt-1">Institutional Misconduct, Handled with Precision</p>
         </div>
         <form onSubmit={handleSubmit} className="px-8 py-7 space-y-4">
           {success
